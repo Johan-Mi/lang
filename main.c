@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum { MAX_PARAMS = 2, MAX_VARIABLES = 8, MAX_FUNCTIONS = 8 };
+enum { MAX_PARAMS = 3, MAX_VARIABLES = 8, MAX_FUNCTIONS = 8 };
 
 static void assert_errno(bool condition, char const *message) {
     if (!condition) {
@@ -264,6 +264,9 @@ static LLVMValueRef call_function(
             builder, LLVMBuildICmp(builder, LLVMIntEQ, args[0], args[1], ""),
             LLVMInt64Type(), false, ""
         );
+    } else if (streq(name, "memcpy")) {
+        assert(arg_count == 3);
+        return LLVMBuildMemCpy(builder, args[0], 1, args[1], 1, args[2]);
     } else {
         size_t i = look_up_function(fns, name);
         assert(arg_count == fns->param_counts[i]);

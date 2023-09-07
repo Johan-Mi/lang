@@ -248,7 +248,9 @@ static LLVMValueRef call_function(
     } else if (streq(name, "read")) {
         assert(arg_count == 1);
         LLVMTypeRef i64 = LLVMInt64Type();
-        return LLVMBuildLoad2(builder, i64, args[0], "");
+        LLVMTypeRef ptr_type = LLVMPointerType(i64, 0);
+        LLVMValueRef ptr = LLVMBuildIntToPtr(builder, args[0], ptr_type, "");
+        return LLVMBuildLoad2(builder, i64, ptr, "");
     } else if (streq(name, "write")) {
         assert(arg_count == 2);
         LLVMBuildStore(builder, args[1], args[0]);

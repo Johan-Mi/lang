@@ -239,6 +239,9 @@ static LLVMValueRef call_function(
     if (streq(name, "add")) {
         assert(arg_count == 2);
         return LLVMBuildAdd(builder, args[0], args[1], "");
+    } else if (streq(name, "sub")) {
+        assert(arg_count == 2);
+        return LLVMBuildSub(builder, args[0], args[1], "");
     } else if (streq(name, "mul")) {
         assert(arg_count == 2);
         return LLVMBuildMul(builder, args[0], args[1], "");

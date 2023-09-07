@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum { MAX_PARAMS = 2, MAX_VARIABLES = 8 };
+enum { MAX_PARAMS = 2, MAX_VARIABLES = 8, MAX_FUNCTIONS = 8 };
 
 static void assert_errno(bool condition, char const *message) {
     if (!condition) {
@@ -174,16 +174,53 @@ static LLVMValueRef look_up_variable(Variables *vars, char const *name) {
     assert(!"unknown variable");
 }
 
-static LLVMValueRef
-parse_function_call(Lexer *l, LLVMBuilderRef builder, Variables *vars);
+typedef struct {
+    char *names[MAX_FUNCTIONS];
+    size_t param_counts[MAX_FUNCTIONS];
+    LLVMTypeRef types[MAX_FUNCTIONS];
+    LLVMValueRef refs[MAX_FUNCTIONS];
+    size_t count;
+} Functions;
 
-static LLVMValueRef
-parse_expression_or_rparen(Lexer *l, LLVMBuilderRef builder, Variables *vars) {
+static void add_function(
+    Functions *fns, char *name, size_t param_count, LLVMTypeRef type,
+    LLVMValueRef ref
+) {
+    assert(fns->count < MAX_VARIABLES);
+    fns->names[fns->count] = name;
+    fns->param_counts[fns->count] = param_count;
+    fns->types[fns->count] = type;
+    fns->refs[fns->count] = ref;
+    ++fns->count;
+}
+
+static size_t look_up_function(Functions *fns, char const *name) {
+    for (size_t i = 0; i < fns->count; ++i) {
+        if (streq(fns->names[i], name), name) {
+            return i;
+        }
+    }
+    assert(!"unknown variable");
+}
+
+static void clear_functions(Functions *fns) {
+    for (size_t i = 0; i < fns->count; ++i) {
+        free(fns->names[i]);
+    }
+}
+
+static LLVMValueRef parse_function_call(
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns
+);
+
+static LLVMValueRef parse_expression_or_rparen(
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns
+) {
     Token token = next_token(l);
     if (token_is(token, ')')) {
         return NULL;
     } else if (token_is(token, '(')) {
-        return parse_function_call(l, builder, vars);
+        return parse_function_call(l, builder, vars, fns);
     } else if (is_integer_literal(token)) {
         size_t n = parse_integer_literal(token);
         return LLVMConstInt(LLVMInt64Type(), n, false);
@@ -196,8 +233,8 @@ parse_expression_or_rparen(Lexer *l, LLVMBuilderRef builder, Variables *vars) {
 }
 
 static LLVMValueRef call_function(
-    LLVMBuilderRef builder, char const *name, LLVMValueRef args[],
-    size_t arg_count
+    LLVMBuilderRef builder, Functions *fns, char const *name,
+    LLVMValueRef args[], size_t arg_count
 ) {
     if (streq(name, "add")) {
         assert(arg_count == 2);
@@ -220,12 +257,18 @@ static LLVMValueRef call_function(
             LLVMInt64Type(), false, ""
         );
     } else {
+        size_t i = look_up_function(fns, name);
+        assert(arg_count == fns->param_counts[i]);
+        return LLVMBuildCall2(
+            builder, fns->types[i], fns->refs[i], args, arg_count, ""
+        );
         assert(!"unknown function");
     }
 }
 
-static LLVMValueRef
-parse_function_call(Lexer *l, LLVMBuilderRef builder, Variables *vars) {
+static LLVMValueRef parse_function_call(
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns
+) {
     Token function_name = next_token(l);
     assert(token_is_identifier(function_name));
     char *name = memdupz(function_name.source, function_name.len);
@@ -233,7 +276,7 @@ parse_function_call(Lexer *l, LLVMBuilderRef builder, Variables *vars) {
     LLVMValueRef args[MAX_PARAMS];
     size_t arg_count = 0;
     for (;;) {
-        LLVMValueRef arg = parse_expression_or_rparen(l, builder, vars);
+        LLVMValueRef arg = parse_expression_or_rparen(l, builder, vars, fns);
         if (!arg) {
             break;
         }
@@ -242,19 +285,20 @@ parse_function_call(Lexer *l, LLVMBuilderRef builder, Variables *vars) {
         ++arg_count;
     }
 
-    LLVMValueRef res = call_function(builder, name, args, arg_count);
+    LLVMValueRef res = call_function(builder, fns, name, args, arg_count);
     free(name);
     return res;
 }
 
-static LLVMValueRef
-parse_expression(Lexer *l, LLVMBuilderRef builder, Variables *vars) {
-    LLVMValueRef expr = parse_expression_or_rparen(l, builder, vars);
+static LLVMValueRef parse_expression(
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns
+) {
+    LLVMValueRef expr = parse_expression_or_rparen(l, builder, vars, fns);
     assert(expr);
     return expr;
 }
 
-static bool parse_function(Lexer *l, LLVMModuleRef module) {
+static bool parse_function(Lexer *l, LLVMModuleRef module, Functions *fns) {
     Token function_name = next_token(l);
     if (function_name.source == 0) {
         return false;
@@ -283,7 +327,7 @@ static bool parse_function(Lexer *l, LLVMModuleRef module) {
         LLVMFunctionType(i64, param_types, param_count, false);
     char *name = memdupz(function_name.source, function_name.len);
     LLVMValueRef function = LLVMAddFunction(module, name, function_type);
-    free(name);
+    add_function(fns, name, param_count, function_type, function);
 
     Variables vars = {0};
     for (size_t i = 0; i < param_count; ++i) {
@@ -293,7 +337,7 @@ static bool parse_function(Lexer *l, LLVMModuleRef module) {
     LLVMBasicBlockRef entry = LLVMAppendBasicBlock(function, "entry");
     LLVMBuilderRef builder = LLVMCreateBuilder();
     LLVMPositionBuilderAtEnd(builder, entry);
-    LLVMValueRef return_value = parse_expression(l, builder, &vars);
+    LLVMValueRef return_value = parse_expression(l, builder, &vars, fns);
     LLVMBuildRet(builder, return_value);
 
     assert(token_is(next_token(l), ')'));
@@ -309,8 +353,12 @@ static void parse(Lexer *l) {
     LLVMModuleRef module = LLVMModuleCreateWithName(NULL);
     LLVMSetTarget(module, "x86_64-pc-linux-gnu");
 
-    while (parse_function(l, module))
+    Functions fns = {0};
+
+    while (parse_function(l, module, &fns))
         ;
+
+    clear_functions(&fns);
 
     LLVMVerifyModule(module, LLVMAbortProcessAction, NULL);
     LLVMWriteBitcodeToFile(module, "program.bc");

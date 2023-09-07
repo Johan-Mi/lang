@@ -253,7 +253,10 @@ static LLVMValueRef call_function(
         return LLVMBuildLoad2(builder, i64, ptr, "");
     } else if (streq(name, "write")) {
         assert(arg_count == 2);
-        LLVMBuildStore(builder, args[1], args[0]);
+        LLVMTypeRef i64 = LLVMInt64Type();
+        LLVMTypeRef ptr_type = LLVMPointerType(i64, 0);
+        LLVMValueRef ptr = LLVMBuildIntToPtr(builder, args[0], ptr_type, "");
+        LLVMBuildStore(builder, args[1], ptr);
         return args[1];
     } else if (streq(name, "eq")) {
         assert(arg_count == 2);

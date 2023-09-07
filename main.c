@@ -342,7 +342,7 @@ static bool parse_function(Lexer *l, LLVMModuleRef module, Functions *fns) {
         add_variable(&vars, param_names[i], LLVMGetParam(function, i));
     }
 
-    LLVMBasicBlockRef entry = LLVMAppendBasicBlock(function, "entry");
+    LLVMBasicBlockRef entry = LLVMAppendBasicBlock(function, "");
     LLVMBuilderRef builder = LLVMCreateBuilder();
     LLVMPositionBuilderAtEnd(builder, entry);
     LLVMValueRef return_value = parse_expression(l, builder, &vars, fns);

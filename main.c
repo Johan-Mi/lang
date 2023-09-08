@@ -264,7 +264,6 @@ static LLVMValueRef parse_block(
     Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
     LLVMValueRef func
 ) {
-    assert(token_is(next_token(l), '('));
     LLVMValueRef res = NULL;
     for (;;) {
         LLVMValueRef step =
@@ -368,6 +367,7 @@ static LLVMValueRef parse_expression_or_rparen(
     } else if (token_eq_str(token, "if")) {
         return parse_if(l, builder, vars, fns, func);
     } else if (token_eq_str(token, "do")) {
+        assert(token_is(next_token(l), '('));
         return parse_block(l, builder, vars, fns, func);
     } else if (token_eq_str(token, "while")) {
         return parse_while(l, builder, vars, fns, func);
@@ -516,11 +516,8 @@ static bool parse_function(Lexer *l, LLVMModuleRef module, Functions *fns) {
     LLVMBasicBlockRef entry = LLVMAppendBasicBlock(function, "");
     LLVMBuilderRef builder = LLVMCreateBuilder();
     LLVMPositionBuilderAtEnd(builder, entry);
-    LLVMValueRef return_value =
-        parse_expression(l, builder, &vars, fns, function);
+    LLVMValueRef return_value = parse_block(l, builder, &vars, fns, function);
     LLVMBuildRet(builder, return_value);
-
-    assert(token_is(next_token(l), ')'));
 
     for (size_t i = 0; i < param_count; ++i) {
         remove_variable(&vars);

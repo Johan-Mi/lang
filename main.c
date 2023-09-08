@@ -224,6 +224,11 @@ static LLVMValueRef parse_expression(
     LLVMValueRef func
 );
 
+static LLVMValueRef parse_expression_or_rparen(
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
+    LLVMValueRef func
+);
+
 static LLVMValueRef parse_if(
     Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
     LLVMValueRef func
@@ -253,6 +258,22 @@ static LLVMValueRef parse_if(
     LLVMBasicBlockRef incoming_blocks[] = {then_block, else_block};
     LLVMAddIncoming(phi, incoming_values, incoming_blocks, 2);
     return phi;
+}
+
+static LLVMValueRef parse_block(
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
+    LLVMValueRef func
+) {
+    assert(token_is(next_token(l), '('));
+    LLVMValueRef res = NULL;
+    for (;;) {
+        LLVMValueRef step =
+            parse_expression_or_rparen(l, builder, vars, fns, func);
+        if (!step) {
+            return res ? res : LLVMConstInt(LLVMInt64Type(), 0, false);
+        }
+        res = step;
+    }
 }
 
 static LLVMValueRef parse_while(
@@ -294,6 +315,8 @@ static LLVMValueRef parse_expression_or_rparen(
         return LLVMConstInt(LLVMInt64Type(), n, false);
     } else if (token_eq_str(token, "if")) {
         return parse_if(l, builder, vars, fns, func);
+    } else if (token_eq_str(token, "do")) {
+        return parse_block(l, builder, vars, fns, func);
     } else if (token_eq_str(token, "while")) {
         return parse_while(l, builder, vars, fns, func);
     } else {

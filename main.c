@@ -231,7 +231,7 @@ static LLVMValueRef parse_if(
     LLVMTypeRef i64 = LLVMInt64Type();
     LLVMValueRef condition = parse_expression(l, builder, vars, fns, func);
     LLVMValueRef bool_condition = LLVMBuildICmp(
-        builder, LLVMIntEQ, condition, LLVMConstInt(i64, 0, false), ""
+        builder, LLVMIntNE, condition, LLVMConstInt(i64, 0, false), ""
     );
 
     LLVMBasicBlockRef then_block = LLVMAppendBasicBlock(func, "");

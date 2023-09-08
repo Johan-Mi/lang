@@ -336,6 +336,12 @@ static LLVMValueRef call_function(
             builder, LLVMBuildICmp(builder, LLVMIntEQ, args[0], args[1], ""),
             LLVMInt64Type(), false, ""
         );
+    } else if (streq(name, "lt")) {
+        assert(arg_count == 2);
+        return LLVMBuildIntCast2(
+            builder, LLVMBuildICmp(builder, LLVMIntULT, args[0], args[1], ""),
+            LLVMInt64Type(), false, ""
+        );
     } else if (streq(name, "memcpy")) {
         assert(arg_count == 3);
         return LLVMBuildMemCpy(builder, args[0], 1, args[1], 1, args[2]);

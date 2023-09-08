@@ -170,9 +170,9 @@ static void remove_variable(Variables *vars) {
     free(vars->names[vars->count]);
 }
 
-static LLVMValueRef look_up_variable(Variables *vars, char const *name) {
+static LLVMValueRef look_up_variable(Variables *vars, Token name) {
     for (size_t i = 0; i < vars->count; ++i) {
-        if (streq(vars->names[i], name), name) {
+        if (token_eq_str(name, vars->names[i])) {
             return vars->values[i];
         }
     }
@@ -297,10 +297,7 @@ static LLVMValueRef parse_expression_or_rparen(
     } else if (token_eq_str(token, "while")) {
         return parse_while(l, builder, vars, fns, func);
     } else {
-        char *variable_name = memdupz(token.source, token.len);
-        LLVMValueRef variable_value = look_up_variable(vars, variable_name);
-        free(variable_name);
-        return variable_value;
+        return look_up_variable(vars, token);
     }
 }
 

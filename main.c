@@ -201,7 +201,7 @@ static void add_function(
 
 static size_t look_up_function(Functions *fns, char const *name) {
     for (size_t i = 0; i < fns->count; ++i) {
-        if (streq(fns->names[i], name), name) {
+        if (streq(fns->names[i], name)) {
             return i;
         }
     }

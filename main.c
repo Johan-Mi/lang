@@ -45,7 +45,7 @@ static bool is_identifier_part(char c) {
 }
 
 static bool is_single_character_token(char c) {
-    return c == '(' || c == ')';
+    return c == '(' || c == ')' || c == '.';
 }
 
 typedef struct {
@@ -297,6 +297,7 @@ static LLVMValueRef parse_expression_or_rparen(
     } else if (token_eq_str(token, "while")) {
         return parse_while(l, builder, vars, fns, func);
     } else {
+        assert(token_is_identifier(token));
         return look_up_variable(vars, token);
     }
 }
@@ -399,15 +400,18 @@ static bool parse_function(Lexer *l, LLVMModuleRef module, Functions *fns) {
     size_t param_count = 0;
     char *param_names[MAX_PARAMS];
     LLVMTypeRef param_types[MAX_PARAMS];
+    bool is_extern = false;
     for (;;) {
-        Token param_or_lparen = next_token(l);
-        if (token_is(param_or_lparen, '(')) {
+        Token token = next_token(l);
+        if (token_is(token, '(')) {
+            break;
+        } else if (token_is(token, '.')) {
+            is_extern = true;
             break;
         }
-        assert(token_is_identifier(param_or_lparen));
+        assert(token_is_identifier(token));
         assert(param_count < MAX_PARAMS);
-        param_names[param_count] =
-            memdupz(param_or_lparen.source, param_or_lparen.len);
+        param_names[param_count] = memdupz(token.source, token.len);
         param_types[param_count] = i64;
         ++param_count;
     }
@@ -417,6 +421,10 @@ static bool parse_function(Lexer *l, LLVMModuleRef module, Functions *fns) {
     char *name = memdupz(function_name.source, function_name.len);
     LLVMValueRef function = LLVMAddFunction(module, name, function_type);
     add_function(fns, name, param_count, function_type, function);
+
+    if (is_extern) {
+        return true;
+    }
 
     Variables vars = {0};
     for (size_t i = 0; i < param_count; ++i) {

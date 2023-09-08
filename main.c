@@ -301,6 +301,58 @@ static LLVMValueRef parse_while(
     return LLVMConstInt(i64, 0, false);
 }
 
+static LLVMValueRef parse_and(
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
+    LLVMValueRef func
+) {
+    LLVMValueRef lhs = parse_expression(l, builder, vars, fns, func);
+    LLVMTypeRef i64 = LLVMInt64Type();
+    LLVMValueRef bool_lhs =
+        LLVMBuildICmp(builder, LLVMIntNE, lhs, LLVMConstInt(i64, 0, false), "");
+    LLVMBasicBlockRef this_block = LLVMGetInsertBlock(builder);
+    LLVMBasicBlockRef rhs_block = LLVMAppendBasicBlock(func, "");
+    LLVMBasicBlockRef after = LLVMAppendBasicBlock(func, "");
+    LLVMBuildCondBr(builder, bool_lhs, rhs_block, after);
+
+    LLVMPositionBuilderAtEnd(builder, rhs_block);
+    LLVMValueRef rhs = parse_expression(l, builder, vars, fns, func);
+    LLVMBuildBr(builder, after);
+    LLVMBasicBlockRef rhs_end_block = LLVMGetInsertBlock(builder);
+
+    LLVMPositionBuilderAtEnd(builder, after);
+    LLVMValueRef phi = LLVMBuildPhi(builder, i64, "");
+    LLVMValueRef incoming_values[] = {LLVMConstInt(i64, 0, false), rhs};
+    LLVMBasicBlockRef incoming_blocks[] = {this_block, rhs_end_block};
+    LLVMAddIncoming(phi, incoming_values, incoming_blocks, 2);
+    return phi;
+}
+
+static LLVMValueRef parse_or(
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
+    LLVMValueRef func
+) {
+    LLVMValueRef lhs = parse_expression(l, builder, vars, fns, func);
+    LLVMTypeRef i64 = LLVMInt64Type();
+    LLVMValueRef bool_lhs =
+        LLVMBuildICmp(builder, LLVMIntNE, lhs, LLVMConstInt(i64, 0, false), "");
+    LLVMBasicBlockRef this_block = LLVMGetInsertBlock(builder);
+    LLVMBasicBlockRef rhs_block = LLVMAppendBasicBlock(func, "");
+    LLVMBasicBlockRef after = LLVMAppendBasicBlock(func, "");
+    LLVMBuildCondBr(builder, bool_lhs, after, rhs_block);
+
+    LLVMPositionBuilderAtEnd(builder, rhs_block);
+    LLVMValueRef rhs = parse_expression(l, builder, vars, fns, func);
+    LLVMBuildBr(builder, after);
+    LLVMBasicBlockRef rhs_end_block = LLVMGetInsertBlock(builder);
+
+    LLVMPositionBuilderAtEnd(builder, after);
+    LLVMValueRef phi = LLVMBuildPhi(builder, i64, "");
+    LLVMValueRef incoming_values[] = {lhs, rhs};
+    LLVMBasicBlockRef incoming_blocks[] = {this_block, rhs_end_block};
+    LLVMAddIncoming(phi, incoming_values, incoming_blocks, 2);
+    return phi;
+}
+
 static LLVMValueRef parse_expression_or_rparen(
     Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
     LLVMValueRef func
@@ -319,6 +371,10 @@ static LLVMValueRef parse_expression_or_rparen(
         return parse_block(l, builder, vars, fns, func);
     } else if (token_eq_str(token, "while")) {
         return parse_while(l, builder, vars, fns, func);
+    } else if (token_eq_str(token, "and")) {
+        return parse_and(l, builder, vars, fns, func);
+    } else if (token_eq_str(token, "or")) {
+        return parse_or(l, builder, vars, fns, func);
     } else {
         assert(token_is_identifier(token));
         return look_up_variable(vars, token);

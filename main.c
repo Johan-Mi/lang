@@ -255,6 +255,31 @@ static LLVMValueRef parse_if(
     return phi;
 }
 
+static LLVMValueRef parse_while(
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
+    LLVMValueRef func
+) {
+    LLVMBasicBlockRef check = LLVMAppendBasicBlock(func, "");
+    LLVMBasicBlockRef loop = LLVMAppendBasicBlock(func, "");
+    LLVMBasicBlockRef after = LLVMAppendBasicBlock(func, "");
+
+    LLVMBuildBr(builder, check);
+    LLVMPositionBuilderAtEnd(builder, check);
+    LLVMValueRef condition = parse_expression(l, builder, vars, fns, func);
+    LLVMTypeRef i64 = LLVMInt64Type();
+    LLVMValueRef bool_condition = LLVMBuildICmp(
+        builder, LLVMIntNE, condition, LLVMConstInt(i64, 0, false), ""
+    );
+    LLVMBuildCondBr(builder, bool_condition, loop, after);
+
+    LLVMPositionBuilderAtEnd(builder, loop);
+    parse_expression(l, builder, vars, fns, func);
+    LLVMBuildBr(builder, check);
+
+    LLVMPositionBuilderAtEnd(builder, after);
+    return LLVMConstInt(i64, 0, false);
+}
+
 static LLVMValueRef parse_expression_or_rparen(
     Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
     LLVMValueRef func
@@ -269,6 +294,8 @@ static LLVMValueRef parse_expression_or_rparen(
         return LLVMConstInt(LLVMInt64Type(), n, false);
     } else if (token_eq_str(token, "if")) {
         return parse_if(l, builder, vars, fns, func);
+    } else if (token_eq_str(token, "while")) {
+        return parse_while(l, builder, vars, fns, func);
     } else {
         char *variable_name = memdupz(token.source, token.len);
         LLVMValueRef variable_value = look_up_variable(vars, variable_name);

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum { MAX_PARAMS = 3, MAX_VARIABLES = 8, MAX_FUNCTIONS = 8 };
+enum { MAX_PARAMS = 3, MAX_VARIABLES = 8, MAX_FUNCTIONS = 128 };
 
 static void assert_errno(bool condition, char const *message) {
     if (!condition) {
@@ -191,7 +191,7 @@ static void add_function(
     Functions *fns, char *name, size_t param_count, LLVMTypeRef type,
     LLVMValueRef ref
 ) {
-    assert(fns->count < MAX_VARIABLES);
+    assert(fns->count < MAX_FUNCTIONS);
     fns->names[fns->count] = name;
     fns->param_counts[fns->count] = param_count;
     fns->types[fns->count] = type;

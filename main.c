@@ -423,6 +423,9 @@ static bool parse_function(Lexer *l, LLVMModuleRef module, Functions *fns) {
     add_function(fns, name, param_count, function_type, function);
 
     if (is_extern) {
+        for (size_t i = 0; i < param_count; ++i) {
+            free(param_names[i]);
+        }
         return true;
     }
 

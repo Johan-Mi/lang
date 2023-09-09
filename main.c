@@ -458,7 +458,11 @@ static LLVMValueRef call_function(
         return LLVMBuildArrayAlloca(builder, LLVMInt64Type(), args[0], "");
     } else if (streq(name, "memcpy")) {
         assert(arg_count == 3);
-        return LLVMBuildMemCpy(builder, args[0], 1, args[1], 1, args[2]);
+        LLVMTypeRef i64 = LLVMInt64Type();
+        LLVMTypeRef ptr_type = LLVMPointerType(i64, 0);
+        LLVMValueRef dest = LLVMBuildIntToPtr(builder, args[0], ptr_type, "");
+        LLVMValueRef src = LLVMBuildIntToPtr(builder, args[1], ptr_type, "");
+        return LLVMBuildMemCpy(builder, dest, 1, src, 1, args[2]);
     } else {
         size_t i = look_up_function(fns, name);
         assert(arg_count == fns->param_counts[i]);

@@ -171,7 +171,8 @@ static void remove_variable(Variables *vars) {
 }
 
 static LLVMValueRef look_up_variable(Variables *vars, Token name) {
-    for (size_t i = 0; i < vars->count; ++i) {
+    for (size_t i = vars->count; i > 0;) {
+        --i;
         if (token_eq_str(name, vars->names[i])) {
             return vars->values[i];
         }

@@ -446,7 +446,9 @@ static LLVMValueRef call_function(
         );
     } else if (streq(name, "alloca")) {
         assert(arg_count == 1);
-        return LLVMBuildArrayAlloca(builder, LLVMInt64Type(), args[0], "");
+        LLVMValueRef ptr =
+            LLVMBuildArrayAlloca(builder, LLVMInt64Type(), args[0], "");
+        return LLVMBuildPtrToInt(builder, ptr, LLVMInt64Type(), "");
     } else if (streq(name, "memcpy")) {
         assert(arg_count == 3);
         LLVMTypeRef i64 = LLVMInt64Type();

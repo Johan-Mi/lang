@@ -276,6 +276,20 @@ static LLVMValueRef parse_block(
     }
 }
 
+static LLVMValueRef parse_let(
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
+    LLVMValueRef func
+) {
+    Token var_name = next_token(l);
+    assert(token_is_identifier(var_name));
+    char *name = memdupz(var_name.source, var_name.len);
+    LLVMValueRef value = parse_expression(l, builder, vars, fns, func);
+    add_variable(vars, name, value);
+    LLVMValueRef res = parse_expression(l, builder, vars, fns, func);
+    remove_variable(vars);
+    return res;
+}
+
 static LLVMValueRef parse_while(
     Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
     LLVMValueRef func
@@ -370,6 +384,8 @@ static LLVMValueRef parse_expression_or_rparen(
     } else if (token_eq_str(token, "do")) {
         assert(token_is(next_token(l), '('));
         return parse_block(l, builder, vars, fns, func);
+    } else if (token_eq_str(token, "let")) {
+        return parse_let(l, builder, vars, fns, func);
     } else if (token_eq_str(token, "while")) {
         return parse_while(l, builder, vars, fns, func);
     } else if (token_eq_str(token, "and")) {

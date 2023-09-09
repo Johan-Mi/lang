@@ -244,16 +244,18 @@ parse_if(Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns) {
 
     LLVMPositionBuilderAtEnd(builder, then_block);
     LLVMValueRef then = parse_expression(l, builder, vars, fns);
+    LLVMBasicBlockRef then_end_block = LLVMGetInsertBlock(builder);
     LLVMBuildBr(builder, after_block);
 
     LLVMPositionBuilderAtEnd(builder, else_block);
     LLVMValueRef else_ = parse_expression(l, builder, vars, fns);
+    LLVMBasicBlockRef else_end_block = LLVMGetInsertBlock(builder);
     LLVMBuildBr(builder, after_block);
 
     LLVMPositionBuilderAtEnd(builder, after_block);
     LLVMValueRef phi = LLVMBuildPhi(builder, i64, "");
     LLVMValueRef incoming_values[] = {then, else_};
-    LLVMBasicBlockRef incoming_blocks[] = {then_block, else_block};
+    LLVMBasicBlockRef incoming_blocks[] = {then_end_block, else_end_block};
     LLVMAddIncoming(phi, incoming_values, incoming_blocks, 2);
     return phi;
 }

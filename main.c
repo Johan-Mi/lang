@@ -417,6 +417,14 @@ static LLVMValueRef call_function(
         LLVMValueRef ptr = LLVMBuildIntToPtr(builder, args[0], ptr_type, "");
         LLVMBuildStore(builder, args[1], ptr);
         return args[1];
+    } else if (streq(name, "write8")) {
+        assert(arg_count == 2);
+        LLVMTypeRef i8 = LLVMInt8Type();
+        LLVMTypeRef ptr_type = LLVMPointerType(i8, 0);
+        LLVMValueRef ptr = LLVMBuildIntToPtr(builder, args[0], ptr_type, "");
+        LLVMValueRef value = LLVMBuildIntCast2(builder, args[1], i8, false, "");
+        LLVMBuildStore(builder, value, ptr);
+        return LLVMBuildIntCast2(builder, value, LLVMInt64Type(), false, "");
     } else if (streq(name, "eq")) {
         assert(arg_count == 2);
         return LLVMBuildIntCast2(

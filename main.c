@@ -428,6 +428,9 @@ static LLVMValueRef call_function(
             builder, LLVMBuildICmp(builder, LLVMIntULT, args[0], args[1], ""),
             LLVMInt64Type(), false, ""
         );
+    } else if (streq(name, "alloca")) {
+        assert(arg_count == 1);
+        return LLVMBuildArrayAlloca(builder, LLVMInt64Type(), args[0], "");
     } else if (streq(name, "memcpy")) {
         assert(arg_count == 3);
         return LLVMBuildMemCpy(builder, args[0], 1, args[1], 1, args[2]);

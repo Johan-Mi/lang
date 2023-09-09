@@ -216,29 +216,26 @@ static void clear_functions(Functions *fns) {
 }
 
 static LLVMValueRef parse_function_call(
-    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
-    LLVMValueRef func
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns
 );
 
 static LLVMValueRef parse_expression(
-    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
-    LLVMValueRef func
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns
 );
 
 static LLVMValueRef parse_expression_or_rparen(
-    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
-    LLVMValueRef func
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns
 );
 
-static LLVMValueRef parse_if(
-    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
-    LLVMValueRef func
-) {
+static LLVMValueRef
+parse_if(Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns) {
     LLVMTypeRef i64 = LLVMInt64Type();
-    LLVMValueRef condition = parse_expression(l, builder, vars, fns, func);
+    LLVMValueRef condition = parse_expression(l, builder, vars, fns);
     LLVMValueRef bool_condition = LLVMBuildICmp(
         builder, LLVMIntNE, condition, LLVMConstInt(i64, 0, false), ""
     );
+
+    LLVMValueRef func = LLVMGetBasicBlockParent(LLVMGetInsertBlock(builder));
 
     LLVMBasicBlockRef then_block = LLVMAppendBasicBlock(func, "");
     LLVMBasicBlockRef else_block = LLVMAppendBasicBlock(func, "");
@@ -246,11 +243,11 @@ static LLVMValueRef parse_if(
     LLVMBuildCondBr(builder, bool_condition, then_block, else_block);
 
     LLVMPositionBuilderAtEnd(builder, then_block);
-    LLVMValueRef then = parse_expression(l, builder, vars, fns, func);
+    LLVMValueRef then = parse_expression(l, builder, vars, fns);
     LLVMBuildBr(builder, after_block);
 
     LLVMPositionBuilderAtEnd(builder, else_block);
-    LLVMValueRef else_ = parse_expression(l, builder, vars, fns, func);
+    LLVMValueRef else_ = parse_expression(l, builder, vars, fns);
     LLVMBuildBr(builder, after_block);
 
     LLVMPositionBuilderAtEnd(builder, after_block);
@@ -261,14 +258,11 @@ static LLVMValueRef parse_if(
     return phi;
 }
 
-static LLVMValueRef parse_block(
-    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
-    LLVMValueRef func
-) {
+static LLVMValueRef
+parse_block(Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns) {
     LLVMValueRef res = NULL;
     for (;;) {
-        LLVMValueRef step =
-            parse_expression_or_rparen(l, builder, vars, fns, func);
+        LLVMValueRef step = parse_expression_or_rparen(l, builder, vars, fns);
         if (!step) {
             return res ? res : LLVMConstInt(LLVMInt64Type(), 0, false);
         }
@@ -276,31 +270,29 @@ static LLVMValueRef parse_block(
     }
 }
 
-static LLVMValueRef parse_let(
-    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
-    LLVMValueRef func
-) {
+static LLVMValueRef
+parse_let(Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns) {
     Token var_name = next_token(l);
     assert(token_is_identifier(var_name));
     char *name = memdupz(var_name.source, var_name.len);
-    LLVMValueRef value = parse_expression(l, builder, vars, fns, func);
+    LLVMValueRef value = parse_expression(l, builder, vars, fns);
     add_variable(vars, name, value);
-    LLVMValueRef res = parse_expression(l, builder, vars, fns, func);
+    LLVMValueRef res = parse_expression(l, builder, vars, fns);
     remove_variable(vars);
     return res;
 }
 
-static LLVMValueRef parse_while(
-    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
-    LLVMValueRef func
-) {
+static LLVMValueRef
+parse_while(Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns) {
+    LLVMValueRef func = LLVMGetBasicBlockParent(LLVMGetInsertBlock(builder));
+
     LLVMBasicBlockRef check = LLVMAppendBasicBlock(func, "");
     LLVMBasicBlockRef loop = LLVMAppendBasicBlock(func, "");
     LLVMBasicBlockRef after = LLVMAppendBasicBlock(func, "");
 
     LLVMBuildBr(builder, check);
     LLVMPositionBuilderAtEnd(builder, check);
-    LLVMValueRef condition = parse_expression(l, builder, vars, fns, func);
+    LLVMValueRef condition = parse_expression(l, builder, vars, fns);
     LLVMTypeRef i64 = LLVMInt64Type();
     LLVMValueRef bool_condition = LLVMBuildICmp(
         builder, LLVMIntNE, condition, LLVMConstInt(i64, 0, false), ""
@@ -308,28 +300,27 @@ static LLVMValueRef parse_while(
     LLVMBuildCondBr(builder, bool_condition, loop, after);
 
     LLVMPositionBuilderAtEnd(builder, loop);
-    parse_expression(l, builder, vars, fns, func);
+    parse_expression(l, builder, vars, fns);
     LLVMBuildBr(builder, check);
 
     LLVMPositionBuilderAtEnd(builder, after);
     return LLVMConstInt(i64, 0, false);
 }
 
-static LLVMValueRef parse_and(
-    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
-    LLVMValueRef func
-) {
-    LLVMValueRef lhs = parse_expression(l, builder, vars, fns, func);
+static LLVMValueRef
+parse_and(Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns) {
+    LLVMValueRef lhs = parse_expression(l, builder, vars, fns);
     LLVMTypeRef i64 = LLVMInt64Type();
     LLVMValueRef bool_lhs =
         LLVMBuildICmp(builder, LLVMIntNE, lhs, LLVMConstInt(i64, 0, false), "");
     LLVMBasicBlockRef this_block = LLVMGetInsertBlock(builder);
+    LLVMValueRef func = LLVMGetBasicBlockParent(this_block);
     LLVMBasicBlockRef rhs_block = LLVMAppendBasicBlock(func, "");
     LLVMBasicBlockRef after = LLVMAppendBasicBlock(func, "");
     LLVMBuildCondBr(builder, bool_lhs, rhs_block, after);
 
     LLVMPositionBuilderAtEnd(builder, rhs_block);
-    LLVMValueRef rhs = parse_expression(l, builder, vars, fns, func);
+    LLVMValueRef rhs = parse_expression(l, builder, vars, fns);
     LLVMBuildBr(builder, after);
     LLVMBasicBlockRef rhs_end_block = LLVMGetInsertBlock(builder);
 
@@ -341,21 +332,20 @@ static LLVMValueRef parse_and(
     return phi;
 }
 
-static LLVMValueRef parse_or(
-    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
-    LLVMValueRef func
-) {
-    LLVMValueRef lhs = parse_expression(l, builder, vars, fns, func);
+static LLVMValueRef
+parse_or(Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns) {
+    LLVMValueRef lhs = parse_expression(l, builder, vars, fns);
     LLVMTypeRef i64 = LLVMInt64Type();
     LLVMValueRef bool_lhs =
         LLVMBuildICmp(builder, LLVMIntNE, lhs, LLVMConstInt(i64, 0, false), "");
     LLVMBasicBlockRef this_block = LLVMGetInsertBlock(builder);
+    LLVMValueRef func = LLVMGetBasicBlockParent(this_block);
     LLVMBasicBlockRef rhs_block = LLVMAppendBasicBlock(func, "");
     LLVMBasicBlockRef after = LLVMAppendBasicBlock(func, "");
     LLVMBuildCondBr(builder, bool_lhs, after, rhs_block);
 
     LLVMPositionBuilderAtEnd(builder, rhs_block);
-    LLVMValueRef rhs = parse_expression(l, builder, vars, fns, func);
+    LLVMValueRef rhs = parse_expression(l, builder, vars, fns);
     LLVMBuildBr(builder, after);
     LLVMBasicBlockRef rhs_end_block = LLVMGetInsertBlock(builder);
 
@@ -368,30 +358,29 @@ static LLVMValueRef parse_or(
 }
 
 static LLVMValueRef parse_expression_or_rparen(
-    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
-    LLVMValueRef func
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns
 ) {
     Token token = next_token(l);
     if (token_is(token, ')')) {
         return NULL;
     } else if (token_is(token, '(')) {
-        return parse_function_call(l, builder, vars, fns, func);
+        return parse_function_call(l, builder, vars, fns);
     } else if (is_integer_literal(token)) {
         size_t n = parse_integer_literal(token);
         return LLVMConstInt(LLVMInt64Type(), n, false);
     } else if (token_eq_str(token, "if")) {
-        return parse_if(l, builder, vars, fns, func);
+        return parse_if(l, builder, vars, fns);
     } else if (token_eq_str(token, "do")) {
         assert(token_is(next_token(l), '('));
-        return parse_block(l, builder, vars, fns, func);
+        return parse_block(l, builder, vars, fns);
     } else if (token_eq_str(token, "let")) {
-        return parse_let(l, builder, vars, fns, func);
+        return parse_let(l, builder, vars, fns);
     } else if (token_eq_str(token, "while")) {
-        return parse_while(l, builder, vars, fns, func);
+        return parse_while(l, builder, vars, fns);
     } else if (token_eq_str(token, "and")) {
-        return parse_and(l, builder, vars, fns, func);
+        return parse_and(l, builder, vars, fns);
     } else if (token_eq_str(token, "or")) {
-        return parse_or(l, builder, vars, fns, func);
+        return parse_or(l, builder, vars, fns);
     } else {
         assert(token_is_identifier(token));
         return look_up_variable(vars, token);
@@ -474,8 +463,7 @@ static LLVMValueRef call_function(
 }
 
 static LLVMValueRef parse_function_call(
-    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
-    LLVMValueRef func
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns
 ) {
     Token function_name = next_token(l);
     assert(token_is_identifier(function_name));
@@ -484,8 +472,7 @@ static LLVMValueRef parse_function_call(
     LLVMValueRef args[MAX_PARAMS];
     size_t arg_count = 0;
     for (;;) {
-        LLVMValueRef arg =
-            parse_expression_or_rparen(l, builder, vars, fns, func);
+        LLVMValueRef arg = parse_expression_or_rparen(l, builder, vars, fns);
         if (!arg) {
             break;
         }
@@ -500,10 +487,9 @@ static LLVMValueRef parse_function_call(
 }
 
 static LLVMValueRef parse_expression(
-    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns,
-    LLVMValueRef func
+    Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns
 ) {
-    LLVMValueRef expr = parse_expression_or_rparen(l, builder, vars, fns, func);
+    LLVMValueRef expr = parse_expression_or_rparen(l, builder, vars, fns);
     assert(expr);
     return expr;
 }
@@ -557,7 +543,7 @@ static bool parse_function(Lexer *l, LLVMModuleRef module, Functions *fns) {
     LLVMBasicBlockRef entry = LLVMAppendBasicBlock(function, "");
     LLVMBuilderRef builder = LLVMCreateBuilder();
     LLVMPositionBuilderAtEnd(builder, entry);
-    LLVMValueRef return_value = parse_block(l, builder, &vars, fns, function);
+    LLVMValueRef return_value = parse_block(l, builder, &vars, fns);
     LLVMBuildRet(builder, return_value);
 
     for (size_t i = 0; i < param_count; ++i) {

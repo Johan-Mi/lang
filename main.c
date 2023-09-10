@@ -473,7 +473,6 @@ static LLVMValueRef call_function(
         return LLVMBuildCall2(
             builder, fns->types[i], fns->refs[i], args, arg_count, ""
         );
-        assert(!"unknown function");
     }
 }
 

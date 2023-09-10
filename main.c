@@ -363,6 +363,11 @@ parse_or(Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns) {
     return phi;
 }
 
+static LLVMValueRef parse_string_literal(LLVMBuilderRef builder, Token token) {
+    LLVMValueRef ptr = LLVMConstString(token.source + 1, token.len - 2, false);
+    return LLVMBuildPtrToInt(builder, ptr, LLVMInt64Type(), "");
+}
+
 static LLVMValueRef parse_expression_or_rparen(
     Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns
 ) {
@@ -371,6 +376,8 @@ static LLVMValueRef parse_expression_or_rparen(
         return NULL;
     } else if (token_is(token, '(')) {
         return parse_function_call(l, builder, vars, fns);
+    } else if (token_is(token, '"')) {
+        return parse_string_literal(builder, token);
     } else if (is_integer_literal(token)) {
         size_t n = parse_integer_literal(token);
         return LLVMConstInt(LLVMInt64Type(), n, false);

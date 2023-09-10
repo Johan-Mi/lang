@@ -206,7 +206,7 @@ static size_t look_up_function(Functions *fns, char const *name) {
             return i;
         }
     }
-    assert(!"unknown variable");
+    assert(!"unknown function");
 }
 
 static void clear_functions(Functions *fns) {

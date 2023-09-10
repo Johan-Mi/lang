@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum { MAX_PARAMS = 5, MAX_VARIABLES = 8, MAX_FUNCTIONS = 128 };
+enum { MAX_PARAMS = 8, MAX_VARIABLES = 8, MAX_FUNCTIONS = 128 };
 
 static void assert_errno(bool condition, char const *message) {
     if (!condition) {

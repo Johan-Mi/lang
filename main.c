@@ -186,19 +186,15 @@ static LLVMValueRef look_up_variable(Variables *vars, Token name) {
 
 typedef struct {
     char *names[MAX_FUNCTIONS];
-    size_t param_counts[MAX_FUNCTIONS];
     LLVMTypeRef types[MAX_FUNCTIONS];
     LLVMValueRef refs[MAX_FUNCTIONS];
     size_t count;
 } Functions;
 
-static void add_function(
-    Functions *fns, char *name, size_t param_count, LLVMTypeRef type,
-    LLVMValueRef ref
-) {
+static void
+add_function(Functions *fns, char *name, LLVMTypeRef type, LLVMValueRef ref) {
     assert(fns->count < MAX_FUNCTIONS);
     fns->names[fns->count] = name;
-    fns->param_counts[fns->count] = param_count;
     fns->types[fns->count] = type;
     fns->refs[fns->count] = ref;
     ++fns->count;
@@ -469,7 +465,7 @@ static LLVMValueRef call_function(
         return LLVMBuildMemCpy(builder, dest, 1, src, 1, args[2]);
     } else {
         size_t i = look_up_function(fns, name);
-        assert(arg_count == fns->param_counts[i]);
+        assert(arg_count == LLVMCountParamTypes(fns->types[i]));
         return LLVMBuildCall2(
             builder, fns->types[i], fns->refs[i], args, arg_count, ""
         );
@@ -540,7 +536,7 @@ static bool parse_function(Lexer *l, LLVMModuleRef module, Functions *fns) {
         LLVMFunctionType(i64, param_types, param_count, false);
     char *name = memdupz(function_name.source, function_name.len);
     LLVMValueRef function = LLVMAddFunction(module, name, function_type);
-    add_function(fns, name, param_count, function_type, function);
+    add_function(fns, name, function_type, function);
 
     if (is_extern) {
         for (size_t i = 0; i < param_count; ++i) {

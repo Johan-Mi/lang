@@ -102,6 +102,10 @@ static bool find_start_of_next_token(Lexer *l) {
 static size_t next_token_length(Lexer *l) {
     if (is_single_character_token(*l->line)) {
         return 1;
+    } else if (*l->line == '"') {
+        char const *end_quote = memchr(l->line + 1, '"', l->len - 1);
+        assert(end_quote && "unterminated string literal");
+        return end_quote - l->line + 1;
     }
     assert(is_identifier_part(*l->line) && "invalid character in source code");
     size_t i = 1;
@@ -122,7 +126,7 @@ static Token next_token(Lexer *l) {
 }
 
 static bool token_is_identifier(Token token) {
-    return token.source && !is_single_character_token(*token.source);
+    return token.source && is_identifier_part(*token.source);
 }
 
 static bool token_is(Token token, char c) {

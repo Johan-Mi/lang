@@ -580,7 +580,7 @@ static bool parse_function(Lexer *l, LLVMModuleRef module, Functions *fns) {
     return true;
 }
 
-static void parse(Lexer *l) {
+static void parse(Lexer *l, char const *output_path) {
     LLVMModuleRef module = LLVMModuleCreateWithName(NULL);
     LLVMSetTarget(module, "x86_64-pc-linux-gnu");
 
@@ -592,20 +592,22 @@ static void parse(Lexer *l) {
     clear_functions(&fns);
 
     LLVMVerifyModule(module, LLVMAbortProcessAction, NULL);
-    LLVMWriteBitcodeToFile(module, "program.bc");
+    LLVMWriteBitcodeToFile(module, output_path);
     LLVMDisposeModule(module);
 }
 
 int main(int argc, char const *const argv[]) {
-    assert(argc >= 2 && "no file provided");
-    assert(argc == 2 && "too many command line arguments");
+    assert(argc >= 2 && "no source file provided");
+    assert(argc >= 3 && "no output file path provided");
+    assert(argc == 3 && "too many command line arguments");
     char const *file_path = argv[1];
+    char const *output_path = argv[1];
 
     Lexer lexer = {0};
     lexer.file = fopen(file_path, "r");
     assert_errno(lexer.file, "failed to read source code");
 
-    parse(&lexer);
+    parse(&lexer, output_path);
 
     free(lexer.full_line);
     assert_errno(!fclose(lexer.file), "failed to read source code");

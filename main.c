@@ -360,7 +360,9 @@ parse_or(Lexer *l, LLVMBuilderRef builder, Variables *vars, Functions *fns) {
 }
 
 static LLVMValueRef parse_string_literal(LLVMBuilderRef builder, Token token) {
-    LLVMValueRef ptr = LLVMConstString(token.source + 1, token.len - 2, false);
+    char *str = memdupz(token.source + 1, token.len - 2);
+    LLVMValueRef ptr = LLVMBuildGlobalString(builder, str, "");
+    free(str);
     return LLVMBuildPtrToInt(builder, ptr, LLVMInt64Type(), "");
 }
 

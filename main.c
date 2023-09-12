@@ -206,7 +206,7 @@ static size_t look_up_function(Functions *fns, char const *name) {
             return i;
         }
     }
-    assert(!"unknown function");
+    return -1;
 }
 
 static void clear_functions(Functions *fns) {
@@ -467,6 +467,7 @@ static LLVMValueRef call_function(
         return LLVMBuildMemCpy(builder, dest, 1, src, 1, args[2]);
     } else {
         size_t i = look_up_function(fns, name);
+        assert(i != (size_t)-1 && "unknown function");
         assert(arg_count == LLVMCountParamTypes(fns->types[i]));
         return LLVMBuildCall2(
             builder, fns->types[i], fns->refs[i], args, arg_count, ""
@@ -537,8 +538,22 @@ static bool parse_function(Lexer *l, LLVMModuleRef module, Functions *fns) {
     LLVMTypeRef function_type =
         LLVMFunctionType(i64, param_types, param_count, false);
     char *name = memdupz(function_name.source, function_name.len);
-    LLVMValueRef function = LLVMAddFunction(module, name, function_type);
-    add_function(fns, name, function_type, function);
+    size_t index = look_up_function(fns, name);
+    LLVMValueRef function;
+    if (index == (size_t)-1) {
+        function = LLVMAddFunction(module, name, function_type);
+        add_function(fns, name, function_type, function);
+    } else {
+        assert(
+            function_type == fns->types[index] &&
+            "function signature does not match forward declaration"
+        );
+        assert(
+            !LLVMGetFirstBasicBlock(fns->refs[index]) &&
+            "cannot redefine function"
+        );
+        function = fns->refs[index];
+    }
 
     if (is_extern) {
         for (size_t i = 0; i < param_count; ++i) {

@@ -4,6 +4,10 @@ LDLIBS := $(shell llvm-config --ldflags --libs)
 all: stage2
 .PHONY: all
 
+test: compiler.bc stage2.bc
+	diff $^
+.PHONY: test
+
 %: %.bc
 	clang -o $@ $< $(LDLIBS)
 

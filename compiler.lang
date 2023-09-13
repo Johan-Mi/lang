@@ -271,7 +271,7 @@ look_up_variable vars name (
     (write i 0)
     while (lt (read i) count) do (
         and (token_eq_str name (read (add vars (mul 8 (read i)))))
-            (write res (add vars (mul 8 (add (MAX_VARIABLES) (read i)))))
+            (write res (read (add vars (mul 8 (add (MAX_VARIABLES) (read i))))))
         (inc i)
     )
     (assert (read res) "unknown variable")

@@ -1,7 +1,6 @@
 # Lang (TODO: choose a name)
 
-An untyped, unsafe, compiled programming language implemented in C, with the
-goal of making it self-hosted.
+A self-hosted, untyped, unsafe, compiled programming language bootstrapped with C.
 
 ## Dependencies
 

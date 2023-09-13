@@ -742,4 +742,6 @@ main argc argv (
     (free (read (add 32 lexer)))
     (assert_errno (not (fclose file)) "failed to read source code")
     ))
+
+    0
 )

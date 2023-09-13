@@ -312,7 +312,7 @@ clear_functions fns (
     let i (alloca 1) do (
     (write i 0)
     while (lt (read i) count) do (
-        (free (add fns (mul 8 (read i))))
+        (free (read (add fns (mul 8 (read i)))))
         (inc i)
     ))
 )

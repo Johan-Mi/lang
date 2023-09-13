@@ -601,7 +601,7 @@ int main(int argc, char const *const argv[]) {
     assert(argc >= 3 && "no output file path provided");
     assert(argc == 3 && "too many command line arguments");
     char const *file_path = argv[1];
-    char const *output_path = argv[1];
+    char const *output_path = argv[2];
 
     Lexer lexer = {0};
     lexer.file = fopen(file_path, "r");

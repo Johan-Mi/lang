@@ -1,4 +1,4 @@
-main
 compile_flags.txt
 *.bc
-program
+bootstrap
+compiler

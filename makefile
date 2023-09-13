@@ -1,11 +1,14 @@
 CFLAGS := -Wall -Wextra -Wpedantic $(shell llvm-config --cflags)
 LDLIBS := $(shell llvm-config --ldflags --libs)
 
-all: compiler
+all: stage2
 .PHONY: all
 
-compiler: compiler.bc
+%: %.bc
 	clang -o $@ $< $(LDLIBS)
+
+stage2.bc: compiler.lang compiler
+	./compiler $< $@
 
 compiler.bc: compiler.lang bootstrap
 	./bootstrap $< $@

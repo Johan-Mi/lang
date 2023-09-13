@@ -274,8 +274,8 @@ look_up_variable vars name (
             (write res (add vars (mul 8 (add (MAX_VARIABLES) (read i)))))
         (inc i)
     )
-    (assert res "unknown variable")
-    res
+    (assert (read res) "unknown variable")
+    (read res)
     )
 )
 

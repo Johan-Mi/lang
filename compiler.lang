@@ -157,7 +157,8 @@ skip_whitespace l (
 
 find_start_of_next_token l (
     let success (alloca 1) do (
-    while and (read success) do ((skip_whitespace l) (read (add 8 l)))
+    (write success 1)
+    while and (read success) do ((skip_whitespace l) (not (read (add 8 l))))
         or (read_next_line l) (write success 0)
     (read success)
     )
@@ -171,7 +172,7 @@ next_token_length l (
     if (eq (read8 line) 34)
         let end_quote (memchr (add line 1) 34 (sub len 1)) do (
         (assert end_quote "unterminated string literal")
-        (sub end_quote (add line 1))
+        (add (sub end_quote line) 1)
         )
     do (
         (assert (is_identifier_part (read8 line)) "invalid character in source code")
@@ -669,7 +670,7 @@ parse_function l module fns (
         let i (alloca 1) do (
         (write i 0)
         while (lt (read i) param_count) do (
-            (free (add param_names (mul 8 i)))
+            (free (read (add param_names (mul 8 (read i)))))
             (inc i)
         ))
     do (
@@ -693,6 +694,7 @@ parse_function l module fns (
         (LLVMBuildRet builder return_value)
 
         let i (alloca 1) do (
+        (write i 0)
         while (lt (read i) param_count) do (
             (remove_variable vars)
             (inc i)

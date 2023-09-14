@@ -48,6 +48,7 @@ LLVMInt8Type.
 LLVMModuleCreateWithName name.
 LLVMPointerType pointee address_space.
 LLVMPositionBuilderAtEnd builder block.
+LLVMSetLinkage global linkage.
 LLVMSetTarget module target.
 LLVMVerifyModule module action out_message.
 LLVMWriteBitcodeToFile module path.
@@ -617,6 +618,10 @@ parse_function l module fns (
     let function_name (alloca 2) do (
     (next_token l function_name)
     and (read function_name) do (
+    let export and (token_eq_str function_name "export") do (
+        (next_token l function_name)
+        1
+    ) do (
     (assert (token_is_identifier function_name)
             "expected function declaration or definition")
 
@@ -655,6 +660,7 @@ parse_function l module fns (
     let function if (eq index 18446744073709551615)
         let f (LLVMAddFunction module name function_type) do (
         (add_function fns name function_type f)
+        or (read is_extern) or export (LLVMSetLinkage f 8)
         f
         )
         let type (read (add fns (mul 8 (add index (MAX_FUNCTIONS)))))
@@ -702,7 +708,7 @@ parse_function l module fns (
     )))
 
     1
-    ))
+    )))
 )
 
 parse l output_path (
@@ -723,7 +729,7 @@ parse l output_path (
     ))
 )
 
-main argc argv (
+export main argc argv (
     (assert (ge argc 2) "no source file provided")
     (assert (ge argc 3) "no output file path provided")
     (assert (eq argc 3) "too many command line arguments")

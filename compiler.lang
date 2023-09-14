@@ -109,24 +109,24 @@ streq a b (
 )
 
 is_whitespace c (
-    or (eq c 32) or (eq c 9) (eq c 10)
+    or (eq c ' ) or (eq c 9) (eq c 10)
 )
 
 is_digit c (
-    and (ge c 48) (le c 57)
+    and (ge c '0) (le c '9)
 )
 
 is_alphabetic c (
-    or and (ge c 65) (le c 90)
-       and (ge c 97) (le c 122)
+    or and (ge c 'a) (le c 'z)
+       and (ge c 'A) (le c 'Z)
 )
 
 is_identifier_part c (
-    or (is_alphabetic c) or (is_digit c) (eq c 95)
+    or (is_alphabetic c) or (is_digit c) (eq c '_)
 )
 
 is_single_character_token c (
-    or (eq c 40) or (eq c 41) (eq c 46)
+    or (eq c '() or (eq c ')) (eq c '.)
 )
 
 bump l byte_count (
@@ -170,12 +170,15 @@ next_token_length l (
     let len (read (add 8 l))
     if (is_single_character_token (read8 line))
         1
-    if (eq (read8 line) 34)
-        let end_quote (memchr (add line 1) 34 (sub len 1)) do (
+    if (eq (read8 line) '")
+        let end_quote (memchr (add line 1) '" (sub len 1)) do (
         (assert end_quote "unterminated string literal")
         (add (sub end_quote line) 1)
         )
-    do (
+    if (eq (read8 line) '') do (
+        (assert (ge len 2) "unterminateed character literal")
+        2
+    ) do (
         (assert (is_identifier_part (read8 line)) "invalid character in source code")
         let i (alloca 1) do (
         (write i 1)
@@ -475,15 +478,21 @@ parse_string_literal builder token (
     )
 )
 
+parse_character_literal token (
+    (LLVMConstInt (LLVMInt64Type) (read8 (add 1 (read token))) 0)
+)
+
 parse_expression_or_rparen l builder vars fns (
     let token (alloca 2) do (
     (next_token l token)
-    if (token_is token 41)
+    if (token_is token '))
         0
-    if (token_is token 40)
+    if (token_is token '()
         (parse_function_call l builder vars fns)
-    if (token_is token 34)
+    if (token_is token '")
         (parse_string_literal builder token)
+    if (token_is token '')
+        (parse_character_literal token)
     if (is_integer_literal token)
         let n (parse_integer_literal token)
         (LLVMConstInt (LLVMInt64Type) n 0)
@@ -492,7 +501,7 @@ parse_expression_or_rparen l builder vars fns (
     if (token_eq_str token "do")
         let lparen (alloca 2) do (
         (next_token l lparen)
-        (assert (token_is lparen 40) "expected `(` after `do`")
+        (assert (token_is lparen '() "expected `(` after `do`")
         (parse_block l builder vars fns)
         )
     if (token_eq_str token "let")
@@ -638,9 +647,9 @@ parse_function l module fns (
     while (not (read done))
         let token (alloca 2) do (
         (next_token l token)
-        if (token_is token 40)
+        if (token_is token '()
             (write done 1)
-        if (token_is token 46) do (
+        if (token_is token '.) do (
             (write is_extern 1)
             (write done 1)
         ) do (

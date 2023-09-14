@@ -1,5 +1,5 @@
-compile_flags.txt
 *.bc
+!bootstrap.bc
 bootstrap
 compiler
 stage*

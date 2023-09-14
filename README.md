@@ -1,10 +1,9 @@
 # Lang (TODO: choose a name)
 
-A self-hosted, untyped, unsafe, compiled programming language bootstrapped with C.
+A self-hosted, untyped, unsafe, compiled programming language.
 
 ## Dependencies
 
-- A C compiler
 - make
 - LLVM
 
@@ -16,5 +15,6 @@ make
 
 ## Contributing
 
-- Format the code with clang-format.
-- If you're using clangd, set it up with `make compile_flags.txt`.
+Run `./update-bootstrap` before committing to ensure that the latest build of
+the compiler (featuring your new changes) will be used to bootstrap the next
+commit.

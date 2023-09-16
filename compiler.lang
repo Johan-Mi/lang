@@ -1,57 +1,57 @@
-exit status.
-fclose stream.
-feof stream.
-fopen path modes.
-free ptr.
-getline lineptr n stream.
-malloc size.
-memchr ptr byte len.
-memcmp a b len.
-memcpy dest src len.
-memset ptr byte len.
-perror message.
-puts s.
-strcmp a b.
-strlen s.
+extern exit status.
+extern fclose stream.
+extern feof stream.
+extern fopen path modes.
+extern free ptr.
+extern getline lineptr n stream.
+extern malloc size.
+extern memchr ptr byte len.
+extern memcmp a b len.
+extern memcpy dest src len.
+extern memset ptr byte len.
+extern perror message.
+extern puts s.
+extern strcmp a b.
+extern strlen s.
 
-LLVMAddFunction module name function_type.
-LLVMAddIncoming phi incoming_values incoming_blocks count.
-LLVMAppendBasicBlock function name.
-LLVMBuildAdd builder lhs rhs name.
-LLVMBuildArrayAlloca builder type count name.
-LLVMBuildBr builder block.
-LLVMBuildCall2 builder type function args arg_count name.
-LLVMBuildCondBr builder condition then else.
-LLVMBuildGlobalString builder str name.
-LLVMBuildICmp builder comparison lhs rhs name.
-LLVMBuildIntCast2 builder value type is_signed name.
-LLVMBuildIntToPtr builder value ptr_type name.
-LLVMBuildLoad2 builder type ptr name.
-LLVMBuildMemCpy builder dest dest_alignment src src_alignment size.
-LLVMBuildMul builder lhs rhs name.
-LLVMBuildPhi builder type name.
-LLVMBuildPtrToInt builder ptr type name.
-LLVMBuildRet builder value.
-LLVMBuildStore builder value ptr.
-LLVMBuildSub builder lhs rhs name.
-LLVMConstInt type n is_signed.
-LLVMCountParamTypes function_type.
-LLVMCreateBuilder.
-LLVMDisposeModule module.
-LLVMFunctionType return_type param_types param_count is_variadic.
-LLVMGetBasicBlockParent block.
-LLVMGetFirstBasicBlock function.
-LLVMGetInsertBlock builder.
-LLVMGetParam function index.
-LLVMInt64Type.
-LLVMInt8Type.
-LLVMModuleCreateWithName name.
-LLVMPointerType pointee address_space.
-LLVMPositionBuilderAtEnd builder block.
-LLVMSetLinkage global linkage.
-LLVMSetTarget module target.
-LLVMVerifyModule module action out_message.
-LLVMWriteBitcodeToFile module path.
+extern LLVMAddFunction module name function_type.
+extern LLVMAddIncoming phi incoming_values incoming_blocks count.
+extern LLVMAppendBasicBlock function name.
+extern LLVMBuildAdd builder lhs rhs name.
+extern LLVMBuildArrayAlloca builder type count name.
+extern LLVMBuildBr builder block.
+extern LLVMBuildCall2 builder type function args arg_count name.
+extern LLVMBuildCondBr builder condition then else.
+extern LLVMBuildGlobalString builder str name.
+extern LLVMBuildICmp builder comparison lhs rhs name.
+extern LLVMBuildIntCast2 builder value type is_signed name.
+extern LLVMBuildIntToPtr builder value ptr_type name.
+extern LLVMBuildLoad2 builder type ptr name.
+extern LLVMBuildMemCpy builder dest dest_alignment src src_alignment size.
+extern LLVMBuildMul builder lhs rhs name.
+extern LLVMBuildPhi builder type name.
+extern LLVMBuildPtrToInt builder ptr type name.
+extern LLVMBuildRet builder value.
+extern LLVMBuildStore builder value ptr.
+extern LLVMBuildSub builder lhs rhs name.
+extern LLVMConstInt type n is_signed.
+extern LLVMCountParamTypes function_type.
+extern LLVMCreateBuilder.
+extern LLVMDisposeModule module.
+extern LLVMFunctionType return_type param_types param_count is_variadic.
+extern LLVMGetBasicBlockParent block.
+extern LLVMGetFirstBasicBlock function.
+extern LLVMGetInsertBlock builder.
+extern LLVMGetParam function index.
+extern LLVMInt64Type.
+extern LLVMInt8Type.
+extern LLVMModuleCreateWithName name.
+extern LLVMPointerType pointee address_space.
+extern LLVMPositionBuilderAtEnd builder block.
+extern LLVMSetLinkage global linkage.
+extern LLVMSetTarget module target.
+extern LLVMVerifyModule module action out_message.
+extern LLVMWriteBitcodeToFile module path.
 
 MAX_PARAMS (8)
 MAX_VARIABLES (32)
@@ -694,7 +694,7 @@ parse_function l module fns (
     let function if (eq index 18446744073709551615)
         let f (LLVMAddFunction module name function_type) do (
         (add_function fns name function_type f)
-        or (read is_declaration) or extern (LLVMSetLinkage f 8)
+        or extern (LLVMSetLinkage f 8)
         f
         )
         let type (read (add fns (mul 8 (add index (MAX_FUNCTIONS)))))

@@ -222,15 +222,11 @@ token_eq_str token s (
 is_integer_literal token (
     let source (read token)
     let len (read (add 8 token))
-    let i (alloca 1)
     let res (alloca 1) do (
     (write res 1)
-    (write i 0)
-    while (lt (read i) len) do (
-        or (is_digit (read8 (add source (read i))))
+    for i len
+        or (is_digit (read8 (add source i)))
             (write res 0)
-        (inc i)
-    )
     (read res)
     )
 )
@@ -238,15 +234,11 @@ is_integer_literal token (
 parse_integer_literal token (
     let source (read token)
     let len (read (add 8 token))
-    let n (alloca 1)
-    let i (alloca 1) do (
+    let n (alloca 1) do (
     (write n 0)
-    (write i 0)
-    while (lt (read i) len) do (
+    for i len
         (write n (add (mul 10 (read n))
-                      (sub (read8 (add source (read i))) 48)))
-        (inc i)
-    )
+                      (sub (read8 (add source i)) 48)))
     (read n)
     )
 )
@@ -269,15 +261,11 @@ remove_variable vars (
 
 look_up_variable vars name (
     let count (read (add vars (mul 16 (MAX_VARIABLES))))
-    let res (alloca 1)
-    let i (alloca 1) do (
+    let res (alloca 1) do (
     (write res 0)
-    (write i 0)
-    while (lt (read i) count) do (
-        and (token_eq_str name (read (add vars (mul 8 (read i)))))
-            (write res (read (add vars (mul 8 (add (MAX_VARIABLES) (read i))))))
-        (inc i)
-    )
+    for i count
+        and (token_eq_str name (read (add vars (mul 8 i))))
+            (write res (read (add vars (mul 8 (add (MAX_VARIABLES) i)))))
     (assert (read res) "unknown variable")
     (read res)
     )
@@ -298,27 +286,19 @@ add_function fns name type ref (
 
 look_up_function fns name (
     let count (read (add fns (mul 24 (MAX_FUNCTIONS))))
-    let res (alloca 1)
-    let i (alloca 1) do (
+    let res (alloca 1) do (
     (write res 18446744073709551615)
-    (write i 0)
-    while (lt (read i) count) do (
-        and (streq (read (add fns (mul 8 (read i)))) name)
-            (write res (read i))
-        (inc i)
-    )
+    for i count
+        and (streq (read (add fns (mul 8 i))) name)
+            (write res i)
     (read res)
     )
 )
 
 clear_functions fns (
     let count (read (add fns (mul 24 (MAX_FUNCTIONS))))
-    let i (alloca 1) do (
-    (write i 0)
-    while (lt (read i) count) do (
-        (free (read (add fns (mul 8 (read i)))))
-        (inc i)
-    ))
+    for i count
+        (free (read (add fns (mul 8 i))))
 )
 
 parse_function_call l builder vars fns.
@@ -468,6 +448,49 @@ parse_or l builder vars fns (
     ))))
 )
 
+parse_for l builder vars fns (
+    let token (alloca 2) do (
+    (next_token l token)
+    (assert (token_is_identifier token) "expected a variable name after `for`")
+    let var_name (memdupz (read token) (read (add 8 token)))
+
+    let this_block (LLVMGetInsertBlock builder)
+    let func (LLVMGetBasicBlockParent this_block)
+    let check (LLVMAppendBasicBlock func "")
+    let loop (LLVMAppendBasicBlock func "")
+    let after (LLVMAppendBasicBlock func "")
+
+    let times (parse_expression l builder vars fns) do (
+    (LLVMBuildBr builder check)
+
+    (LLVMPositionBuilderAtEnd builder check)
+    let i64 (LLVMInt64Type)
+    let counter (LLVMBuildPhi builder i64 "")
+    let continue (LLVMBuildICmp builder 36 counter times "") do (
+    (LLVMBuildCondBr builder continue loop after)
+
+    (LLVMPositionBuilderAtEnd builder loop)
+    (add_variable vars var_name counter)
+    (parse_expression l builder vars fns)
+    (remove_variable vars)
+    let new_counter (LLVMBuildAdd builder counter (LLVMConstInt i64 1 0) "")
+    let loop_end (LLVMGetInsertBlock builder) do (
+    (LLVMBuildBr builder check)
+
+    (LLVMPositionBuilderAtEnd builder after)
+
+    let incoming_values (alloca 2)
+    let incoming_blocks (alloca 2) do (
+    (write incoming_values (LLVMConstInt i64 0 0))
+    (write (add 8 incoming_values) new_counter)
+    (write incoming_blocks this_block)
+    (write (add 8 incoming_blocks) loop_end)
+    (LLVMAddIncoming counter incoming_values incoming_blocks 2)
+
+    (LLVMConstInt i64 0 0)
+    )))))
+)
+
 parse_string_literal builder token (
     let source (read token)
     let len (read (add 8 token))
@@ -512,6 +535,8 @@ parse_expression_or_rparen l builder vars fns (
         (parse_and l builder vars fns)
     if (token_eq_str token "or")
         (parse_or l builder vars fns)
+    if (token_eq_str token "for")
+        (parse_for l builder vars fns)
     do (
         (assert (token_is_identifier token) "expected an expression")
         (look_up_variable vars token)
@@ -682,25 +707,17 @@ parse_function l module fns (
         ) do (
 
     if (read is_extern)
-        let i (alloca 1) do (
-        (write i 0)
-        while (lt (read i) param_count) do (
-            (free (read (add param_names (mul 8 (read i)))))
-            (inc i)
-        ))
+        for i param_count
+            (free (read (add param_names (mul 8 i))))
     do (
         let size_of_variables (add 1 (mul 2 (MAX_VARIABLES)))
         let vars (alloca size_of_variables) do (
         (memset vars 0 (mul 8 size_of_variables))
-        let i (alloca 1) do (
-        (write i 0)
-        while (lt (read i) param_count) do (
+        for i param_count
             (add_variable
               vars
-              (read (add param_names (mul 8 (read i))))
-              (LLVMGetParam function (read i)))
-            (inc i)
-        ))
+              (read (add param_names (mul 8 i)))
+              (LLVMGetParam function i))
 
         let entry (LLVMAppendBasicBlock function "")
         let builder (LLVMCreateBuilder) do (
@@ -708,12 +725,9 @@ parse_function l module fns (
         let return_value (parse_block l builder vars fns) do (
         (LLVMBuildRet builder return_value)
 
-        let i (alloca 1) do (
-        (write i 0)
-        while (lt (read i) param_count) do (
+        for i param_count
             (remove_variable vars)
-            (inc i)
-        )))))
+        )))
     )))
 
     1

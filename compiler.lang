@@ -652,7 +652,7 @@ parse_function l module fns (
     let function_name (alloca 2) do (
     (next_token l function_name)
     and (read function_name) do (
-    let export and (token_eq_str function_name "export") do (
+    let extern and (token_eq_str function_name "extern") do (
         (next_token l function_name)
         1
     ) do (
@@ -664,10 +664,10 @@ parse_function l module fns (
     let param_count (alloca 1)
     let param_names (alloca (MAX_PARAMS))
     let param_types (alloca (MAX_PARAMS))
-    let is_extern (alloca 1)
+    let is_declaration (alloca 1)
     let done (alloca 1) do (
     (write param_count 0)
-    (write is_extern 0)
+    (write is_declaration 0)
     (write done 0)
     while (not (read done))
         let token (alloca 2) do (
@@ -675,7 +675,7 @@ parse_function l module fns (
         if (token_is token '()
             (write done 1)
         if (token_is token '.) do (
-            (write is_extern 1)
+            (write is_declaration 1)
             (write done 1)
         ) do (
             (assert (token_is_identifier token) "expected parameter name, function body or `.`")
@@ -694,7 +694,7 @@ parse_function l module fns (
     let function if (eq index 18446744073709551615)
         let f (LLVMAddFunction module name function_type) do (
         (add_function fns name function_type f)
-        or (read is_extern) or export (LLVMSetLinkage f 8)
+        or (read is_declaration) or extern (LLVMSetLinkage f 8)
         f
         )
         let type (read (add fns (mul 8 (add index (MAX_FUNCTIONS)))))
@@ -706,7 +706,7 @@ parse_function l module fns (
         ref
         ) do (
 
-    if (read is_extern)
+    if (read is_declaration)
         for i param_count
             (free (read (add param_names (mul 8 i))))
     do (
@@ -752,7 +752,7 @@ parse l output_path (
     ))
 )
 
-export main argc argv (
+extern main argc argv (
     (assert (ge argc 2) "no source file provided")
     (assert (ge argc 3) "no output file path provided")
     (assert (eq argc 3) "too many command line arguments")

@@ -203,6 +203,10 @@ next_token l token (
     )
 )
 
+tokdupz token (
+    (memdupz (read token) (read (add 8 token)))
+)
+
 token_is_identifier token (
     let source (read token)
     and source (is_identifier_part (read8 source))
@@ -358,7 +362,7 @@ parse_let l builder vars fns (
     let var_name (alloca 2) do (
     (next_token l var_name)
     (assert (token_is_identifier var_name) "expected a variable name after `let`")
-    let name (memdupz (read var_name) (read (add 8 var_name)))
+    let name (tokdupz var_name)
     let value (parse_expression l builder vars fns) do (
     (add_variable vars name value)
     let res (parse_expression l builder vars fns) do (
@@ -452,7 +456,7 @@ parse_for l builder vars fns (
     let token (alloca 2) do (
     (next_token l token)
     (assert (token_is_identifier token) "expected a variable name after `for`")
-    let var_name (memdupz (read token) (read (add 8 token)))
+    let var_name (tokdupz token)
 
     let this_block (LLVMGetInsertBlock builder)
     let func (LLVMGetBasicBlockParent this_block)
@@ -620,7 +624,7 @@ parse_function_call l builder vars fns (
     let function_name (alloca 2) do (
     (next_token l function_name)
     (assert (token_is_identifier function_name) "expected a function name after `(`")
-    let name (memdupz (read function_name) (read (add 8 function_name)))
+    let name (tokdupz function_name)
 
     let args (alloca (MAX_PARAMS))
     let arg_count (alloca 1)
@@ -681,7 +685,7 @@ parse_function l module fns (
             (assert (token_is_identifier token) "expected parameter name, function body or `.`")
             (assert (lt (read param_count) (MAX_PARAMS))
                     "too many function parameters")
-            let param_name (memdupz (read token) (read (add 8 token)))
+            let param_name (tokdupz token)
             (write (add param_names (mul 8 (read param_count))) param_name)
             (write (add param_types (mul 8 (read param_count))) i64)
             (inc param_count)
@@ -689,7 +693,7 @@ parse_function l module fns (
 
     let param_count (read param_count)
     let function_type (LLVMFunctionType i64 param_types param_count 0)
-    let name (memdupz (read function_name) (read (add 8 function_name)))
+    let name (tokdupz function_name)
     let index (look_up_function fns name)
     let function if (eq index 18446744073709551615)
         let f (LLVMAddFunction module name function_type) do (

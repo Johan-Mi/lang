@@ -628,12 +628,12 @@ parse_function_call l builder vars fns (
     (write arg_count 0)
     (write done 0)
     while (not (read done))
-        let arg (parse_expression_or_rparen l builder vars fns) do (
+        let arg (parse_expression_or_rparen l builder vars fns)
         if arg do (
             (assert (lt (read arg_count) (MAX_PARAMS)) "too many arguments to function call")
             (write (add args (mul 8 (read arg_count))) arg)
             (inc arg_count)
-        ) (write done 1))
+        ) (write done 1)
 
     let res (call_function builder fns name args (read arg_count)) do (
     (free name)

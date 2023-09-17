@@ -502,14 +502,30 @@ parse_for l builder vars fns (
     )))))
 )
 
+parse_defer l builder vars fns (
+    let this_block (LLVMGetInsertBlock builder)
+    let func (LLVMGetBasicBlockParent this_block)
+    let defer_block (LLVMAppendBasicBlock func "") do (
+
+    (LLVMPositionBuilderAtEnd builder defer_block)
+    (parse_expression l builder vars fns)
+
+    (LLVMPositionBuilderAtEnd builder this_block)
+    let res (parse_expression l builder vars fns) do (
+    (LLVMBuildBr builder defer_block)
+
+    (LLVMPositionBuilderAtEnd builder defer_block)
+    res
+    ))
+)
+
 parse_string_literal builder token (
     let source (read token)
     let len (read (add 8 token))
     let str (memdupz (add source 1) (sub len 2))
-    let ptr (LLVMBuildGlobalString builder str "") do (
-    (free str)
+    defer (free str)
+    let ptr (LLVMBuildGlobalString builder str "")
     (LLVMBuildPtrToInt builder ptr (LLVMInt64Type) "")
-    )
 )
 
 parse_character_literal token (
@@ -548,6 +564,8 @@ parse_expression_or_rparen l builder vars fns (
         (parse_or l builder vars fns)
     if (token_eq_str token "for")
         (parse_for l builder vars fns)
+    if (token_eq_str token "defer")
+        (parse_defer l builder vars fns)
     do (
         (assert (token_is_identifier token) "expected an expression")
         (look_up_variable vars token)
@@ -632,6 +650,7 @@ parse_function_call l builder vars fns (
     (next_token l function_name)
     (assert (token_is_identifier function_name) "expected a function name after `(`")
     let name (tokdupz function_name)
+    defer (free name)
 
     let args (alloca (MAX_PARAMS))
     let arg_count (alloca 1)
@@ -646,10 +665,8 @@ parse_function_call l builder vars fns (
             (inc arg_count)
         ) (write done 1)
 
-    let res (call_function builder fns name args (read arg_count)) do (
-    (free name)
-    res
-    )))
+    (call_function builder fns name args (read arg_count))
+    ))
 )
 
 parse_expression l builder vars fns (
@@ -743,20 +760,19 @@ parse_function l module fns (
 )
 
 parse l output_path (
-    let module (LLVMModuleCreateWithName 0) do (
+    let module (LLVMModuleCreateWithName 0)
+    defer (LLVMDisposeModule module) do (
     (LLVMSetTarget module "x86_64-pc-linux-gnu")
 
     let size_of_fns (add 1 (mul 3 (MAX_FUNCTIONS)))
-    let fns (alloca size_of_fns) do (
+    let fns (alloca size_of_fns)
+    defer (clear_functions fns) do (
     (memset fns 0 (mul 8 size_of_fns))
 
     while (parse_function l module fns) 0
 
-    (clear_functions fns)
-
     (LLVMVerifyModule module 0 0)
     (LLVMWriteBitcodeToFile module output_path)
-    (LLVMDisposeModule module)
     ))
 )
 
@@ -768,16 +784,15 @@ extern main argc argv (
     let output_path (read (add 16 argv))
 
     let size_of_lexer 5
-    let lexer (alloca size_of_lexer) do (
+    let lexer (alloca size_of_lexer)
+    defer (free (read (add 32 lexer))) do (
     (memset lexer 0 (mul 8 size_of_lexer))
-    let file (fopen file_path "r") do (
+    let file (fopen file_path "r")
+    defer (assert_errno (not (fclose file)) "failed to read source code") do (
     (assert_errno file "failed to read source code")
     (write (add 24 lexer) file)
 
     (parse lexer output_path)
-
-    (free (read (add 32 lexer)))
-    (assert_errno (not (fclose file)) "failed to read source code")
     ))
 
     0

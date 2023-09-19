@@ -174,7 +174,7 @@ next_token_length l (
         (assert end_quote "unterminated string literal")
         (add (sub end_quote line) 1)
     ) if (eq (read8 line) '') do (
-        (assert (ge len 2) "unterminateed character literal")
+        (assert (ge len 2) "unterminated character literal")
         2
     ) do (
         (assert (is_identifier_part (read8 line)) "invalid character in source code")

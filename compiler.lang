@@ -45,6 +45,7 @@ extern LLVMGetInsertBlock builder.
 extern LLVMGetParam function index.
 extern LLVMInt64Type.
 extern LLVMInt8Type.
+extern LLVMIsFunctionVarArg function_type.
 extern LLVMModuleCreateWithName name.
 extern LLVMPointerType pointee address_space.
 extern LLVMPositionBuilderAtEnd builder block.
@@ -572,6 +573,13 @@ parse_expression_or_rparen l builder vars fns (
     ))
 )
 
+correct_arg_count arg_count function_type (
+    let param_count (LLVMCountParamTypes function_type)
+    if (LLVMIsFunctionVarArg function_type)
+        (ge arg_count param_count)
+        (eq arg_count param_count)
+)
+
 call_function builder fns name args arg_count (
     if (streq name "add") do (
         (assert (eq arg_count 2) "expected 2 arguments to `add`")
@@ -639,7 +647,7 @@ call_function builder fns name args arg_count (
         (assert (ne i 18446744073709551615) "unknown function")
         let type (read (add fns (mul 8 (add i (MAX_FUNCTIONS)))))
         let ref (read (add fns (mul 8 (add i (mul 2 (MAX_FUNCTIONS)))))) do (
-        (assert (eq arg_count (LLVMCountParamTypes type)) "wrong number of arguments to function call")
+        (assert (correct_arg_count arg_count type) "wrong number of arguments to function call")
         (LLVMBuildCall2 builder type ref args arg_count "")
         ))
     )
@@ -680,7 +688,8 @@ parse_function l module fns (
     let function_name (alloca 2) do (
     (next_token l function_name)
     and (read function_name) do (
-    let extern (try_eat_keyword l function_name "extern") do (
+    let extern (try_eat_keyword l function_name "extern")
+    let variadic (try_eat_keyword l function_name "variadic") do (
     (assert (token_is_identifier function_name)
             "expected function declaration or definition")
 
@@ -713,7 +722,7 @@ parse_function l module fns (
         ))
 
     let param_count (read param_count)
-    let function_type (LLVMFunctionType i64 param_types param_count 0)
+    let function_type (LLVMFunctionType i64 param_types param_count variadic)
     let name (tokdupz function_name)
     let index (look_up_function fns name)
     let function if (eq index 18446744073709551615)

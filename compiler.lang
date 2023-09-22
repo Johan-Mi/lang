@@ -54,9 +54,9 @@ fn extern LLVMSetTarget module target.
 fn extern LLVMVerifyModule module action out_message.
 fn extern LLVMWriteBitcodeToFile module path.
 
-fn MAX_PARAMS (8)
-fn MAX_VARIABLES (32)
-fn MAX_FUNCTIONS (128)
+const MAX_PARAMS 8
+const MAX_VARIABLES 32
+const MAX_FUNCTIONS 128
 
 fn not b (
     (eq b 0)
@@ -249,36 +249,42 @@ fn parse_integer_literal token (
 )
 
 fn add_variable vars name value (
-    let count (add vars (mul 16 (MAX_VARIABLES)))
-    (assert (lt (read count) (MAX_VARIABLES)) "too many variables")
+    let count (add vars (mul 16 MAX_VARIABLES))
+    (assert (lt (read count) MAX_VARIABLES) "too many variables")
     (write (add vars (mul 8 (read count))) name)
-    (write (add vars (mul 8 (add (MAX_VARIABLES) (read count)))) value)
+    (write (add vars (mul 8 (add MAX_VARIABLES (read count)))) value)
     (inc count)
 )
 
+fn clear_variables vars (
+    let count (read (add vars (mul 16 MAX_VARIABLES)))
+    for i count
+        (free (read (add vars (mul 8 i))))
+)
+
 fn remove_variable vars (
-    let count (add vars (mul 16 (MAX_VARIABLES)))
+    let count (add vars (mul 16 MAX_VARIABLES))
     (dec count)
     (free (read (add vars (mul 8 (read count)))))
 )
 
 fn look_up_variable vars name (
-    let count (read (add vars (mul 16 (MAX_VARIABLES))))
+    let count (read (add vars (mul 16 MAX_VARIABLES)))
     let res (alloca 1)
     (write res 0)
     for i count
         and (token_eq_str name (read (add vars (mul 8 i))))
-            (write res (read (add vars (mul 8 (add (MAX_VARIABLES) i)))))
+            (write res (read (add vars (mul 8 (add MAX_VARIABLES i)))))
     (assert (read res) "unknown variable")
     (read res)
 )
 
 fn add_function fns name type ref (
-    let count (add fns (mul 24 (MAX_FUNCTIONS)))
-    (assert (lt (read count) (MAX_FUNCTIONS)) "too many functions")
+    let count (add fns (mul 24 MAX_FUNCTIONS))
+    (assert (lt (read count) MAX_FUNCTIONS) "too many functions")
     let names fns
-    let types (add names (mul 8 (MAX_FUNCTIONS)))
-    let refs (add types (mul 8 (MAX_FUNCTIONS)))
+    let types (add names (mul 8 MAX_FUNCTIONS))
+    let refs (add types (mul 8 MAX_FUNCTIONS))
     (write (add names (mul 8 (read count))) name)
     (write (add types (mul 8 (read count))) type)
     (write (add refs (mul 8 (read count))) ref)
@@ -286,7 +292,7 @@ fn add_function fns name type ref (
 )
 
 fn look_up_function fns name (
-    let count (read (add fns (mul 24 (MAX_FUNCTIONS))))
+    let count (read (add fns (mul 24 MAX_FUNCTIONS)))
     let res (alloca 1)
     (write res 18446744073709551615)
     for i count
@@ -296,7 +302,7 @@ fn look_up_function fns name (
 )
 
 fn clear_functions fns (
-    let count (read (add fns (mul 24 (MAX_FUNCTIONS))))
+    let count (read (add fns (mul 24 MAX_FUNCTIONS)))
     for i count
         (free (read (add fns (mul 8 i))))
 )
@@ -628,8 +634,8 @@ fn call_function builder fns name args arg_count (
     ) do (
         let i (look_up_function fns name)
         (assert (ne i 18446744073709551615) "unknown function")
-        let type (read (add fns (mul 8 (add i (MAX_FUNCTIONS)))))
-        let ref (read (add fns (mul 8 (add i (mul 2 (MAX_FUNCTIONS))))))
+        let type (read (add fns (mul 8 (add i MAX_FUNCTIONS))))
+        let ref (read (add fns (mul 8 (add i (mul 2 MAX_FUNCTIONS)))))
         (assert (correct_arg_count arg_count type) "wrong number of arguments to function call")
         (LLVMBuildCall2 builder type ref args arg_count "")
     )
@@ -642,7 +648,7 @@ fn parse_function_call l builder vars fns (
     let name (tokdupz function_name)
     defer (free name)
 
-    let args (alloca (MAX_PARAMS))
+    let args (alloca MAX_PARAMS)
     let arg_count (alloca 1)
     let done (alloca 1)
     (write arg_count 0)
@@ -650,7 +656,7 @@ fn parse_function_call l builder vars fns (
     while (not (read done))
         let arg (parse_expression_or_rparen l builder vars fns 0)
         if arg do (
-            (assert (lt (read arg_count) (MAX_PARAMS)) "too many arguments to function call")
+            (assert (lt (read arg_count) MAX_PARAMS) "too many arguments to function call")
             (write (add args (mul 8 (read arg_count))) arg)
             (inc arg_count)
         ) (write done 1)
@@ -664,7 +670,7 @@ fn parse_expression l builder vars fns (
     expr
 )
 
-fn parse_function l module fns (
+fn parse_function l module vars fns (
     let function_name (alloca 2)
     (next_token l function_name)
     let extern (try_eat_keyword l function_name "extern")
@@ -675,8 +681,8 @@ fn parse_function l module fns (
     let i64 (LLVMInt64Type)
 
     let param_count (alloca 1)
-    let param_names (alloca (MAX_PARAMS))
-    let param_types (alloca (MAX_PARAMS))
+    let param_names (alloca MAX_PARAMS)
+    let param_types (alloca MAX_PARAMS)
     let is_declaration (alloca 1)
     let done (alloca 1)
     (write param_count 0)
@@ -692,7 +698,7 @@ fn parse_function l module fns (
             (write done 1)
         ) do (
             (assert (token_is_identifier token) "expected parameter name, function body or `.`")
-            (assert (lt (read param_count) (MAX_PARAMS))
+            (assert (lt (read param_count) MAX_PARAMS)
                     "too many function parameters")
             let param_name (tokdupz token)
             (write (add param_names (mul 8 (read param_count))) param_name)
@@ -711,8 +717,8 @@ fn parse_function l module fns (
         or extern (LLVMSetLinkage f 8)
         f
     ) do (
-        let type (read (add fns (mul 8 (add index (MAX_FUNCTIONS)))))
-        let ref (read (add fns (mul 8 (add index (mul 2 (MAX_FUNCTIONS))))))
+        let type (read (add fns (mul 8 (add index MAX_FUNCTIONS))))
+        let ref (read (add fns (mul 8 (add index (mul 2 MAX_FUNCTIONS)))))
         (assert (eq function_type type)
                 "function signature does not match forward declaration")
         (assert (not (LLVMGetFirstBasicBlock ref))
@@ -724,9 +730,6 @@ fn parse_function l module fns (
         for i param_count
             (free (read (add param_names (mul 8 i))))
     do (
-        let size_of_variables (add 1 (mul 2 (MAX_VARIABLES)))
-        let vars (alloca size_of_variables)
-        (memset vars 0 (mul 8 size_of_variables))
         for i param_count
             (add_variable
               vars
@@ -746,12 +749,28 @@ fn parse_function l module fns (
     1
 )
 
-fn parse_top_level_item l module fns (
+fn parse_constant l vars (
+    let token (alloca 2)
+
+    (next_token l token)
+    (assert (token_is_identifier token) "expected identifier after `const`")
+    let name (tokdupz token)
+
+    (next_token l token)
+    (assert (is_integer_literal token) "constant must be an integer literal")
+    let value (parse_integer_literal token)
+
+    (add_variable vars name (LLVMConstInt (LLVMInt64Type) value 0))
+)
+
+fn parse_top_level_item l module vars fns (
     let token (alloca 2)
     (next_token l token)
     and (read token) do (
         if (token_eq_str token "fn")
-            (parse_function l module fns)
+            (parse_function l module vars fns)
+        if (token_eq_str token "const")
+            (parse_constant l vars)
         (assert 0 "unexpected top-level item")
         1
     )
@@ -762,12 +781,17 @@ fn parse l output_path (
     defer (LLVMDisposeModule module)
     (LLVMSetTarget module "x86_64-pc-linux-gnu")
 
-    let size_of_fns (add 1 (mul 3 (MAX_FUNCTIONS)))
+    let size_of_variables (add 1 (mul 2 MAX_VARIABLES))
+    let vars (alloca size_of_variables)
+    defer (clear_variables vars)
+    (memset vars 0 (mul 8 size_of_variables))
+
+    let size_of_fns (add 1 (mul 3 MAX_FUNCTIONS))
     let fns (alloca size_of_fns)
     defer (clear_functions fns)
     (memset fns 0 (mul 8 size_of_fns))
 
-    while (parse_top_level_item l module fns) 0
+    while (parse_top_level_item l module vars fns) 0
 
     (LLVMVerifyModule module 0 0)
     (LLVMWriteBitcodeToFile module output_path)

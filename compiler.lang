@@ -745,8 +745,6 @@ fn parse_function l module vars fns (
         for i param_count
             (remove_variable vars)
     )
-
-    1
 )
 
 fn parse_constant l vars (

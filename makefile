@@ -1,6 +1,6 @@
 LDLIBS := $(shell llvm-config --ldflags --libs)
 
-all: stage2
+all: test
 .PHONY: all
 
 test: compiler.bc stage2.bc

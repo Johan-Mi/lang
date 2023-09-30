@@ -24,6 +24,7 @@ fn extern LLVMBuildCall2 builder type function args arg_count name.
 fn extern LLVMBuildCondBr builder condition then else.
 fn extern LLVMBuildGlobalString builder str name.
 fn extern LLVMBuildICmp builder comparison lhs rhs name.
+fn extern LLVMBuildInBoundsGEP2 builder type ptr indices index_count name.
 fn extern LLVMBuildIntCast2 builder value type is_signed name.
 fn extern LLVMBuildIntToPtr builder value ptr_type name.
 fn extern LLVMBuildLoad2 builder type ptr name.
@@ -335,12 +336,8 @@ fn parse_if l builder vars fns (
 
     (LLVMPositionBuilderAtEnd builder after_block)
     let phi (LLVMBuildPhi builder i64 "")
-    let incoming_values (alloca 2)
-    let incoming_blocks (alloca 2)
-    (write incoming_values then)
-    (write (add 8 incoming_values) else)
-    (write incoming_blocks then_end_block)
-    (write (add 8 incoming_blocks) else_end_block)
+    let incoming_values (array then else)
+    let incoming_blocks (array then_end_block else_end_block)
     (LLVMAddIncoming phi incoming_values incoming_blocks 2)
     phi
 )
@@ -417,12 +414,8 @@ fn parse_and l builder vars fns (
 
     (LLVMPositionBuilderAtEnd builder after)
     let phi (LLVMBuildPhi builder i64 "")
-    let incoming_values (alloca 2)
-    let incoming_blocks (alloca 2)
-    (write incoming_values (LLVMConstInt i64 0 0))
-    (write (add 8 incoming_values) rhs)
-    (write incoming_blocks this_block)
-    (write (add 8 incoming_blocks) rhs_end_block)
+    let incoming_values (array (LLVMConstInt i64 0 0) rhs)
+    let incoming_blocks (array this_block rhs_end_block)
     (LLVMAddIncoming phi incoming_values incoming_blocks 2)
     phi
 )
@@ -444,12 +437,8 @@ fn parse_or l builder vars fns (
 
     (LLVMPositionBuilderAtEnd builder after)
     let phi (LLVMBuildPhi builder i64 "")
-    let incoming_values (alloca 2)
-    let incoming_blocks (alloca 2)
-    (write incoming_values lhs)
-    (write (add 8 incoming_values) rhs)
-    (write incoming_blocks this_block)
-    (write (add 8 incoming_blocks) rhs_end_block)
+    let incoming_values (array lhs rhs)
+    let incoming_blocks (array this_block rhs_end_block)
     (LLVMAddIncoming phi incoming_values incoming_blocks 2)
     phi
 )
@@ -485,12 +474,8 @@ fn parse_for l builder vars fns (
 
     (LLVMPositionBuilderAtEnd builder after)
 
-    let incoming_values (alloca 2)
-    let incoming_blocks (alloca 2)
-    (write incoming_values (LLVMConstInt i64 0 0))
-    (write (add 8 incoming_values) new_counter)
-    (write incoming_blocks this_block)
-    (write (add 8 incoming_blocks) loop_end)
+    let incoming_values (array (LLVMConstInt i64 0 0) new_counter)
+    let incoming_blocks (array this_block loop_end)
     (LLVMAddIncoming counter incoming_values incoming_blocks 2)
 
     (LLVMConstInt i64 0 0)
@@ -631,6 +616,17 @@ fn call_function builder fns name args arg_count (
         let dest (LLVMBuildIntToPtr builder (read args) ptr_type "")
         let src (LLVMBuildIntToPtr builder (read (add 8 args)) ptr_type "")
         (LLVMBuildMemCpy builder dest 1 src 1 (read (add 16 args)))
+    ) if (streq name "array") do (
+        let i64 (LLVMInt64Type)
+        let array_ptr (LLVMBuildArrayAlloca
+                        builder i64 (LLVMConstInt i64 arg_count 0) "")
+        for i arg_count
+            let element (read (add (mul 8 i) args))
+            let indices (array (LLVMConstInt i64 i 0))
+            let element_ptr (LLVMBuildInBoundsGEP2
+                              builder i64 array_ptr indices 1 "")
+            (LLVMBuildStore builder element element_ptr)
+        (LLVMBuildPtrToInt builder array_ptr i64 "")
     ) do (
         let i (look_up_function fns name)
         (assert (ne i 18446744073709551615) "unknown function")

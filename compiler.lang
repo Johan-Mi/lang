@@ -110,7 +110,7 @@ fn streq a b (
 )
 
 fn is_whitespace c (
-    or (eq c ' ) or (eq c 9) (eq c 10)
+    or (eq c ' ) or (eq c '\t) (eq c '\n)
 )
 
 fn is_digit c (
@@ -176,7 +176,10 @@ fn next_token_length l (
         (add (sub end_quote line) 1)
     ) if (eq (read8 line) '') do (
         (assert (ge len 2) "unterminated character literal")
-        2
+        if (eq (read8 (add line 1)) '\\) do (
+            (assert (ge len 3) "unterminated character literal")
+            3
+        ) 2
     ) do (
         (assert (is_identifier_part (read8 line)) "invalid character in source code")
         let i (alloca 1)
@@ -507,7 +510,18 @@ fn parse_string_literal builder token (
 )
 
 fn parse_character_literal token (
-    (LLVMConstInt (LLVMInt64Type) (read8 (add 1 (read token))) 0)
+    let byte (read8 (add 1 (read token)))
+    let byte if (ne byte '\\)
+        byte
+    let byte (read8 (add 2 (read token)))
+    if (eq byte '\\)
+        '\\
+    if (eq byte 'n)
+        '\n
+    if (eq byte 't)
+        '\t
+    (assert 0 "invalid character escape sequence")
+    (LLVMConstInt (LLVMInt64Type) byte 0)
 )
 
 fn parse_expression_or_rparen l builder vars fns in_block (

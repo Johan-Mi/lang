@@ -158,8 +158,7 @@ fn skip_whitespace l (
 )
 
 fn find_start_of_next_token l (
-    let success (alloca 1)
-    (write success 1)
+    let success (array 1)
     while and (read success) do ((skip_whitespace l) (not (read (add 8 l))))
         or (read_next_line l) (write success 0)
     (read success)
@@ -182,8 +181,7 @@ fn next_token_length l (
         ) 2
     ) do (
         (assert (is_identifier_part (read8 line)) "invalid character in source code")
-        let i (alloca 1)
-        (write i 1)
+        let i (array 1)
         while and (lt (read i) len) (is_identifier_part (read8 (add line (read i))))
             (inc i)
         (read i)
@@ -233,8 +231,7 @@ fn try_eat_keyword l token s (
 fn is_integer_literal token (
     let source (read token)
     let len (read (add 8 token))
-    let res (alloca 1)
-    (write res 1)
+    let res (array 1)
     for i len
         or (is_digit (read8 (add source i)))
             (write res 0)
@@ -244,8 +241,7 @@ fn is_integer_literal token (
 fn parse_integer_literal token (
     let source (read token)
     let len (read (add 8 token))
-    let n (alloca 1)
-    (write n 0)
+    let n (array 0)
     for i len
         (write n (add (mul 10 (read n))
                       (sub (read8 (add source i)) 48)))
@@ -274,8 +270,7 @@ fn remove_variable vars (
 
 fn look_up_variable vars name (
     let count (read (add vars (mul 16 MAX_VARIABLES)))
-    let res (alloca 1)
-    (write res 0)
+    let res (array 0)
     for i count
         and (token_eq_str name (read (add vars (mul 8 i))))
             (write res (read (add vars (mul 8 (add MAX_VARIABLES i)))))
@@ -297,8 +292,7 @@ fn add_function fns name type ref (
 
 fn look_up_function fns name (
     let count (read (add fns (mul 24 MAX_FUNCTIONS)))
-    let res (alloca 1)
-    (write res 18446744073709551615)
+    let res (array 18446744073709551615)
     for i count
         and (streq (read (add fns (mul 8 i))) name)
             (write res i)
@@ -346,10 +340,8 @@ fn parse_if l builder vars fns (
 )
 
 fn parse_block l builder vars fns (
-    let res (alloca 1)
-    let done (alloca 1)
-    (write res 0)
-    (write done 0)
+    let res (array 0)
+    let done (array 0)
     while (not (read done))
         let step (parse_expression_or_rparen l builder vars fns 1)
         if step
@@ -659,10 +651,8 @@ fn parse_function_call l builder vars fns (
     defer (free name)
 
     let args (alloca MAX_PARAMS)
-    let arg_count (alloca 1)
-    let done (alloca 1)
-    (write arg_count 0)
-    (write done 0)
+    let arg_count (array 0)
+    let done (array 0)
     while (not (read done))
         let arg (parse_expression_or_rparen l builder vars fns 0)
         if arg do (
@@ -690,14 +680,11 @@ fn parse_function l module vars fns (
 
     let i64 (LLVMInt64Type)
 
-    let param_count (alloca 1)
+    let param_count (array 0)
     let param_names (alloca MAX_PARAMS)
     let param_types (alloca MAX_PARAMS)
-    let is_declaration (alloca 1)
-    let done (alloca 1)
-    (write param_count 0)
-    (write is_declaration 0)
-    (write done 0)
+    let is_declaration (array 0)
+    let done (array 0)
     while (not (read done)) do (
         let token (alloca 2)
         (next_token l token)

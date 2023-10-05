@@ -22,6 +22,7 @@ fn extern LLVMBuildArrayAlloca builder type count name.
 fn extern LLVMBuildBr builder block.
 fn extern LLVMBuildCall2 builder type function args arg_count name.
 fn extern LLVMBuildCondBr builder condition then else.
+fn extern LLVMBuildExtractValue builder aggregate index name.
 fn extern LLVMBuildGlobalString builder str name.
 fn extern LLVMBuildICmp builder comparison lhs rhs name.
 fn extern LLVMBuildInBoundsGEP2 builder type ptr indices index_count name.
@@ -36,6 +37,7 @@ fn extern LLVMBuildRet builder value.
 fn extern LLVMBuildStore builder value ptr.
 fn extern LLVMBuildSub builder lhs rhs name.
 fn extern LLVMConstInt type n is_signed.
+fn extern LLVMConstStruct values count is_packed.
 fn extern LLVMCountParamTypes function_type.
 fn extern LLVMCreateBuilder.
 fn extern LLVMDisposeModule module.
@@ -516,6 +518,16 @@ fn parse_character_literal token (
     (LLVMConstInt (LLVMInt64Type) byte 0)
 )
 
+fn parse_field_access l builder vars fns (
+    let token (alloca 2)
+    (next_token l token)
+    (assert (is_integer_literal token) "expected field index after `.`")
+    let index (parse_integer_literal token)
+
+    let aggregate (parse_expression l builder vars fns)
+    (LLVMBuildExtractValue builder aggregate index "")
+)
+
 fn parse_expression_or_rparen l builder vars fns in_block (
     let token (alloca 2)
     (next_token l token)
@@ -527,6 +539,8 @@ fn parse_expression_or_rparen l builder vars fns in_block (
         (parse_string_literal builder token)
     if (token_is token '')
         (parse_character_literal token)
+    if (token_is token '.)
+        (parse_field_access l builder vars fns)
     if (is_integer_literal token)
         let n (parse_integer_literal token)
         (LLVMConstInt (LLVMInt64Type) n 0)
@@ -633,7 +647,9 @@ fn call_function builder fns name args arg_count (
                               builder i64 array_ptr indices 1 "")
             (LLVMBuildStore builder element element_ptr)
         (LLVMBuildPtrToInt builder array_ptr i64 "")
-    ) do (
+    ) if (streq name "tuple")
+        (LLVMConstStruct args arg_count 0)
+    do (
         let i (look_up_function fns name)
         (assert (ne i 18446744073709551615) "unknown function")
         let type (read (add fns (mul 8 (add i MAX_FUNCTIONS))))

@@ -730,6 +730,7 @@ fn parse_function l module vars fns > u64 (
     let variadic (try_eat_keyword l function_name "variadic")
     (assert (token_is_identifier function_name)
             "expected function declaration or definition")
+    let name (tokdupz function_name)
 
     let i64 (LLVMInt64Type)
 
@@ -764,7 +765,6 @@ fn parse_function l module vars fns > u64 (
 
     let param_count (read param_count)
     let function_type (LLVMFunctionType return_type param_types param_count variadic)
-    let name (tokdupz function_name)
     let index (look_up_function fns name)
     let function if (eq index 18446744073709551615) do (
         let f (LLVMAddFunction module name function_type)

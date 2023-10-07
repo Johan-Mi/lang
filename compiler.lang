@@ -54,6 +54,7 @@ fn extern LLVMPointerType pointee address_space > u64.
 fn extern LLVMPositionBuilderAtEnd builder block > u64.
 fn extern LLVMSetLinkage global linkage > u64.
 fn extern LLVMSetTarget module target > u64.
+fn extern LLVMStructType element_types element_count is_packed > u64.
 fn extern LLVMVerifyModule module action out_message > u64.
 fn extern LLVMWriteBitcodeToFile module path > u64.
 
@@ -307,12 +308,40 @@ fn clear_functions fns > u64 (
         (free (read (add fns (mul 8 i))))
 )
 
-fn parse_type l > u64 (
+fn parse_type_or_rparen l > u64.
+
+fn parse_tuple_type l > u64 (
+    let args (alloca MAX_PARAMS)
+    let arg_count (array 0)
+    let done (array 0)
+    while (not (read done))
+        let arg (parse_type_or_rparen l)
+        if arg do (
+            (assert (lt (read arg_count) MAX_PARAMS)
+                    "too many elements in tuple type")
+            (write (add args (mul 8 (read arg_count))) arg)
+            (inc arg_count)
+        ) (write done 1)
+
+    (LLVMStructType args (read arg_count) 0)
+)
+
+fn parse_type_or_rparen l > u64 (
     let token (alloca 2)
     (next_token l token)
+    if (token_is token '))
+        0
     if (token_eq_str token "u64")
         (LLVMInt64Type)
-    (assert 0 "expected a type")
+    if (token_is token '()
+        (parse_tuple_type l)
+    (assert 0 "expected a type or `)`")
+)
+
+fn parse_type l > u64 (
+    let type (parse_type_or_rparen l)
+    (assert type "expected a type, not `)`")
+    type
 )
 
 fn parse_function_call l builder vars fns > u64.

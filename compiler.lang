@@ -7,7 +7,6 @@ fn extern getline lineptr n stream > u64.
 fn extern malloc size > u64.
 fn extern memchr ptr byte len > u64.
 fn extern memcmp a b len > u64.
-fn extern memcpy dest src len > u64.
 fn extern memset ptr byte len > u64.
 fn extern perror message > u64.
 fn extern puts s > u64.

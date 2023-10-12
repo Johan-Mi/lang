@@ -1,105 +1,105 @@
-fn extern exit status > u64.
-fn extern fclose stream > u64.
-fn extern feof stream > u64.
-fn extern fopen path modes > u64.
-fn extern free ptr > u64.
-fn extern getline lineptr n stream > u64.
-fn extern malloc size > u64.
-fn extern memchr ptr byte len > u64.
-fn extern memcmp a b len > u64.
-fn extern memset ptr byte len > u64.
-fn extern perror message > u64.
-fn extern puts s > u64.
-fn extern strcmp a b > u64.
-fn extern strlen s > u64.
+fn extern exit status: u64 > u64.
+fn extern fclose stream: u64 > u64.
+fn extern feof stream: u64 > u64.
+fn extern fopen path: u64 modes: u64 > u64.
+fn extern free ptr: u64 > u64.
+fn extern getline lineptr: u64 n: u64 stream: u64 > u64.
+fn extern malloc size: u64 > u64.
+fn extern memchr ptr: u64 byte: u64 len: u64 > u64.
+fn extern memcmp a: u64 b: u64 len: u64 > u64.
+fn extern memset ptr: u64 byte: u64 len: u64 > u64.
+fn extern perror message: u64 > u64.
+fn extern puts s: u64 > u64.
+fn extern strcmp a: u64 b: u64 > u64.
+fn extern strlen s: u64 > u64.
 
-fn extern LLVMAddFunction module name function_type > u64.
-fn extern LLVMAddIncoming phi incoming_values incoming_blocks count > u64.
-fn extern LLVMAppendBasicBlock function name > u64.
-fn extern LLVMBuildAdd builder lhs rhs name > u64.
-fn extern LLVMBuildArrayAlloca builder type count name > u64.
-fn extern LLVMBuildBr builder block > u64.
-fn extern LLVMBuildCall2 builder type function args arg_count name > u64.
-fn extern LLVMBuildCondBr builder condition then else > u64.
-fn extern LLVMBuildExtractValue builder aggregate index name > u64.
-fn extern LLVMBuildGlobalString builder str name > u64.
-fn extern LLVMBuildICmp builder comparison lhs rhs name > u64.
-fn extern LLVMBuildInBoundsGEP2 builder type ptr indices index_count name > u64.
-fn extern LLVMBuildIntCast2 builder value type is_signed name > u64.
-fn extern LLVMBuildIntToPtr builder value ptr_type name > u64.
-fn extern LLVMBuildLoad2 builder type ptr name > u64.
-fn extern LLVMBuildMemCpy builder dest dest_alignment src src_alignment size > u64.
-fn extern LLVMBuildMul builder lhs rhs name > u64.
-fn extern LLVMBuildPhi builder type name > u64.
-fn extern LLVMBuildPtrToInt builder ptr type name > u64.
-fn extern LLVMBuildRet builder value > u64.
-fn extern LLVMBuildStore builder value ptr > u64.
-fn extern LLVMBuildSub builder lhs rhs name > u64.
-fn extern LLVMConstInt type n is_signed > u64.
-fn extern LLVMConstStruct values count is_packed > u64.
-fn extern LLVMCountParamTypes function_type > u64.
+fn extern LLVMAddFunction module: u64 name: u64 function_type: u64 > u64.
+fn extern LLVMAddIncoming phi: u64 incoming_values: u64 incoming_blocks: u64 count: u64 > u64.
+fn extern LLVMAppendBasicBlock function: u64 name: u64 > u64.
+fn extern LLVMBuildAdd builder: u64 lhs: u64 rhs: u64 name: u64 > u64.
+fn extern LLVMBuildArrayAlloca builder: u64 type: u64 count: u64 name: u64 > u64.
+fn extern LLVMBuildBr builder: u64 block: u64 > u64.
+fn extern LLVMBuildCall2 builder: u64 type: u64 function: u64 args: u64 arg_count: u64 name: u64 > u64.
+fn extern LLVMBuildCondBr builder: u64 condition: u64 then: u64 else: u64 > u64.
+fn extern LLVMBuildExtractValue builder: u64 aggregate: u64 index: u64 name: u64 > u64.
+fn extern LLVMBuildGlobalString builder: u64 str: u64 name: u64 > u64.
+fn extern LLVMBuildICmp builder: u64 comparison: u64 lhs: u64 rhs: u64 name: u64 > u64.
+fn extern LLVMBuildInBoundsGEP2 builder: u64 type: u64 ptr: u64 indices: u64 index_count: u64 name: u64 > u64.
+fn extern LLVMBuildIntCast2 builder: u64 value: u64 type: u64 is_signed: u64 name: u64 > u64.
+fn extern LLVMBuildIntToPtr builder: u64 value: u64 ptr_type: u64 name: u64 > u64.
+fn extern LLVMBuildLoad2 builder: u64 type: u64 ptr: u64 name: u64 > u64.
+fn extern LLVMBuildMemCpy builder: u64 dest: u64 dest_alignment: u64 src: u64 src_alignment: u64 size: u64 > u64.
+fn extern LLVMBuildMul builder: u64 lhs: u64 rhs: u64 name: u64 > u64.
+fn extern LLVMBuildPhi builder: u64 type: u64 name: u64 > u64.
+fn extern LLVMBuildPtrToInt builder: u64 ptr: u64 type: u64 name: u64 > u64.
+fn extern LLVMBuildRet builder: u64 value: u64 > u64.
+fn extern LLVMBuildStore builder: u64 value: u64 ptr: u64 > u64.
+fn extern LLVMBuildSub builder: u64 lhs: u64 rhs: u64 name: u64 > u64.
+fn extern LLVMConstInt type: u64 n: u64 is_signed: u64 > u64.
+fn extern LLVMConstStruct values: u64 count: u64 is_packed: u64 > u64.
+fn extern LLVMCountParamTypes function_type: u64 > u64.
 fn extern LLVMCreateBuilder > u64.
-fn extern LLVMDisposeModule module > u64.
-fn extern LLVMFunctionType return_type param_types param_count is_variadic > u64.
-fn extern LLVMGetBasicBlockParent block > u64.
-fn extern LLVMGetFirstBasicBlock function > u64.
-fn extern LLVMGetInsertBlock builder > u64.
-fn extern LLVMGetParam function index > u64.
+fn extern LLVMDisposeModule module: u64 > u64.
+fn extern LLVMFunctionType return_type: u64 param_types: u64 param_count: u64 is_variadic: u64 > u64.
+fn extern LLVMGetBasicBlockParent block: u64 > u64.
+fn extern LLVMGetFirstBasicBlock function: u64 > u64.
+fn extern LLVMGetInsertBlock builder: u64 > u64.
+fn extern LLVMGetParam function: u64 index: u64 > u64.
 fn extern LLVMInt64Type > u64.
 fn extern LLVMInt8Type > u64.
-fn extern LLVMIsFunctionVarArg function_type > u64.
-fn extern LLVMModuleCreateWithName name > u64.
-fn extern LLVMPointerType pointee address_space > u64.
-fn extern LLVMPositionBuilderAtEnd builder block > u64.
-fn extern LLVMSetLinkage global linkage > u64.
-fn extern LLVMSetTarget module target > u64.
-fn extern LLVMStructType element_types element_count is_packed > u64.
-fn extern LLVMVerifyModule module action out_message > u64.
-fn extern LLVMWriteBitcodeToFile module path > u64.
+fn extern LLVMIsFunctionVarArg function_type: u64 > u64.
+fn extern LLVMModuleCreateWithName name: u64 > u64.
+fn extern LLVMPointerType pointee: u64 address_space: u64 > u64.
+fn extern LLVMPositionBuilderAtEnd builder: u64 block: u64 > u64.
+fn extern LLVMSetLinkage global: u64 linkage: u64 > u64.
+fn extern LLVMSetTarget module: u64 target: u64 > u64.
+fn extern LLVMStructType element_types: u64 element_count: u64 is_packed: u64 > u64.
+fn extern LLVMVerifyModule module: u64 action: u64 out_message: u64 > u64.
+fn extern LLVMWriteBitcodeToFile module: u64 path: u64 > u64.
 
 const MAX_PARAMS 8
 const MAX_VARIABLES 32
 const MAX_FUNCTIONS 128
 
-fn not b > u64 (
+fn not b: u64 > u64 (
     (eq b 0)
 )
 
-fn ne a b > u64 (
+fn ne a: u64 b: u64 > u64 (
     (not (eq a b))
 )
 
-fn le a b > u64 (
+fn le a: u64 b: u64 > u64 (
     (not (lt b a))
 )
 
-fn ge a b > u64 (
+fn ge a: u64 b: u64 > u64 (
     (not (lt a b))
 )
 
-fn inc n > u64 (
+fn inc n: u64 > u64 (
     (write n (add (read n) 1))
 )
 
-fn dec n > u64 (
+fn dec n: u64 > u64 (
     (write n (sub (read n) 1))
 )
 
-fn assert condition message > u64 (
+fn assert condition: u64 message: u64 > u64 (
     or condition do (
         (puts message)
         (exit 1)
     )
 )
 
-fn assert_errno condition message > u64 (
+fn assert_errno condition: u64 message: u64 > u64 (
     or condition do (
         (perror message)
         (exit 1)
     )
 )
 
-fn memdupz ptr len > u64 (
+fn memdupz ptr: u64 len: u64 > u64 (
     let res (malloc (add len 1))
     (assert res "out of memory")
     (memcpy res ptr len)
@@ -107,43 +107,43 @@ fn memdupz ptr len > u64 (
     res
 )
 
-fn streq a b > u64 (
+fn streq a: u64 b: u64 > u64 (
     (not (strcmp a b))
 )
 
-fn is_whitespace c > u64 (
+fn is_whitespace c: u64 > u64 (
     or (eq c ' ) or (eq c '\t) (eq c '\n)
 )
 
-fn is_digit c > u64 (
+fn is_digit c: u64 > u64 (
     and (ge c '0) (le c '9)
 )
 
-fn is_alphabetic c > u64 (
+fn is_alphabetic c: u64 > u64 (
     or and (ge c 'a) (le c 'z)
        and (ge c 'A) (le c 'Z)
 )
 
-fn is_identifier_part c > u64 (
+fn is_identifier_part c: u64 > u64 (
     or (is_alphabetic c) or (is_digit c) (eq c '_)
 )
 
-fn is_single_character_token c > u64 (
-    or (eq c '() or (eq c ')) or (eq c '.) (eq c '>)
+fn is_single_character_token c: u64 > u64 (
+    or (eq c '() or (eq c ')) or (eq c '.) or (eq c ':) (eq c '>)
 )
 
-fn bump l byte_count > u64 (
+fn bump l: u64 byte_count: u64 > u64 (
     (write l (add (read l) byte_count))
     (write (add 8 l) (sub (read (add 8 l)) byte_count))
 )
 
-fn remove_comment l > u64 (
+fn remove_comment l: u64 > u64 (
     let comment (memchr (read l) 35 (read (add 8 l)))
     and comment
         (write (add 8 l) (sub comment (read l)))
 )
 
-fn read_next_line l > u64 (
+fn read_next_line l: u64 > u64 (
     (write (add 8 l) (getline (add 32 l) (add 16 l) (read (add 24 l))))
     (write l (read (add 32 l)))
     and (not (feof (read (add 24 l)))) do (
@@ -154,19 +154,19 @@ fn read_next_line l > u64 (
     )
 )
 
-fn skip_whitespace l > u64 (
+fn skip_whitespace l: u64 > u64 (
     while and (read (add 8 l)) (is_whitespace (read8 (read l)))
         (bump l 1)
 )
 
-fn find_start_of_next_token l > u64 (
+fn find_start_of_next_token l: u64 > u64 (
     let success (array 1)
     while and (read success) do ((skip_whitespace l) (not (read (add 8 l))))
         or (read_next_line l) (write success 0)
     (read success)
 )
 
-fn next_token_length l > u64 (
+fn next_token_length l: u64 > u64 (
     let line (read l)
     let len (read (add 8 l))
     if (is_single_character_token (read8 line))
@@ -190,7 +190,7 @@ fn next_token_length l > u64 (
     )
 )
 
-fn next_token l token > u64 (
+fn next_token l: u64 token: u64 > u64 (
     if (find_start_of_next_token l) do (
         let len (next_token_length l)
         let source (read l)
@@ -203,34 +203,34 @@ fn next_token l token > u64 (
     )
 )
 
-fn tokdupz token > u64 (
+fn tokdupz token: u64 > u64 (
     (memdupz (read token) (read (add 8 token)))
 )
 
-fn token_is_identifier token > u64 (
+fn token_is_identifier token: u64 > u64 (
     let source (read token)
     and source (is_identifier_part (read8 source))
 )
 
-fn token_is token c > u64 (
+fn token_is token: u64 c: u64 > u64 (
     let source (read token)
     and source (eq (read8 source) c)
 )
 
-fn token_eq_str token s > u64 (
+fn token_eq_str token: u64 s: u64 > u64 (
     let source (read token)
     let len (strlen s)
     and (eq (read (add 8 token)) len) (not (memcmp source s len))
 )
 
-fn try_eat_keyword l token s > u64 (
+fn try_eat_keyword l: u64 token: u64 s: u64 > u64 (
     and (token_eq_str token s) do (
         (next_token l token)
         1
     )
 )
 
-fn is_integer_literal token > u64 (
+fn is_integer_literal token: u64 > u64 (
     let source (read token)
     let len (read (add 8 token))
     let res (array 1)
@@ -240,7 +240,7 @@ fn is_integer_literal token > u64 (
     (read res)
 )
 
-fn parse_integer_literal token > u64 (
+fn parse_integer_literal token: u64 > u64 (
     let source (read token)
     let len (read (add 8 token))
     let n (array 0)
@@ -250,7 +250,7 @@ fn parse_integer_literal token > u64 (
     (read n)
 )
 
-fn add_variable vars name value > u64 (
+fn add_variable vars: u64 name: u64 value: u64 > u64 (
     let count (add vars (mul 16 MAX_VARIABLES))
     (assert (lt (read count) MAX_VARIABLES) "too many variables")
     (write (add vars (mul 8 (read count))) name)
@@ -258,19 +258,19 @@ fn add_variable vars name value > u64 (
     (inc count)
 )
 
-fn clear_variables vars > u64 (
+fn clear_variables vars: u64 > u64 (
     let count (read (add vars (mul 16 MAX_VARIABLES)))
     for i count
         (free (read (add vars (mul 8 i))))
 )
 
-fn remove_variable vars > u64 (
+fn remove_variable vars: u64 > u64 (
     let count (add vars (mul 16 MAX_VARIABLES))
     (dec count)
     (free (read (add vars (mul 8 (read count)))))
 )
 
-fn look_up_variable vars name > u64 (
+fn look_up_variable vars: u64 name: u64 > u64 (
     let count (read (add vars (mul 16 MAX_VARIABLES)))
     let res (array 0)
     for i count
@@ -280,7 +280,7 @@ fn look_up_variable vars name > u64 (
     (read res)
 )
 
-fn add_function fns name type ref > u64 (
+fn add_function fns: u64 name: u64 type: u64 ref: u64 > u64 (
     let count (add fns (mul 24 MAX_FUNCTIONS))
     (assert (lt (read count) MAX_FUNCTIONS) "too many functions")
     let names fns
@@ -292,7 +292,7 @@ fn add_function fns name type ref > u64 (
     (inc count)
 )
 
-fn look_up_function fns name > u64 (
+fn look_up_function fns: u64 name: u64 > u64 (
     let count (read (add fns (mul 24 MAX_FUNCTIONS)))
     let res (array 18446744073709551615)
     for i count
@@ -301,15 +301,15 @@ fn look_up_function fns name > u64 (
     (read res)
 )
 
-fn clear_functions fns > u64 (
+fn clear_functions fns: u64 > u64 (
     let count (read (add fns (mul 24 MAX_FUNCTIONS)))
     for i count
         (free (read (add fns (mul 8 i))))
 )
 
-fn parse_type_or_rparen l > u64.
+fn parse_type_or_rparen l: u64 > u64.
 
-fn parse_tuple_type l > u64 (
+fn parse_tuple_type l: u64 > u64 (
     let args (alloca MAX_PARAMS)
     let arg_count (array 0)
     let done (array 0)
@@ -325,7 +325,7 @@ fn parse_tuple_type l > u64 (
     (LLVMStructType args (read arg_count) 0)
 )
 
-fn parse_type_or_rparen l > u64 (
+fn parse_type_or_rparen l: u64 > u64 (
     let token (alloca 2)
     (next_token l token)
     if (token_is token '))
@@ -337,17 +337,17 @@ fn parse_type_or_rparen l > u64 (
     (assert 0 "expected a type or `)`")
 )
 
-fn parse_type l > u64 (
+fn parse_type l: u64 > u64 (
     let type (parse_type_or_rparen l)
     (assert type "expected a type, not `)`")
     type
 )
 
-fn parse_function_call l builder vars fns > u64.
-fn parse_expression l builder vars fns > u64.
-fn parse_expression_or_rparen l builder vars fns in_block > u64.
+fn parse_function_call l: u64 builder: u64 vars: u64 fns: u64 > u64.
+fn parse_expression l: u64 builder: u64 vars: u64 fns: u64 > u64.
+fn parse_expression_or_rparen l: u64 builder: u64 vars: u64 fns: u64 in_block: u64 > u64.
 
-fn parse_if l builder vars fns > u64 (
+fn parse_if l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let i64 (LLVMInt64Type)
     let condition (parse_expression l builder vars fns)
     let bool_condition (LLVMBuildICmp builder 33 condition (LLVMConstInt i64 0 0) "")
@@ -377,7 +377,7 @@ fn parse_if l builder vars fns > u64 (
     phi
 )
 
-fn parse_block l builder vars fns > u64 (
+fn parse_block l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let res (array 0)
     let done (array 0)
     while (not (read done))
@@ -388,14 +388,14 @@ fn parse_block l builder vars fns > u64 (
     or (read res) (LLVMConstInt (LLVMInt64Type) 0 0)
 )
 
-fn parse_expression_or_rest_of_block l builder vars fns in_block > u64 (
+fn parse_expression_or_rest_of_block l: u64 builder: u64 vars: u64 fns: u64 in_block: u64 > u64 (
     if in_block
         defer (bump l (sub 0 1))
         (parse_block l builder vars fns)
         (parse_expression l builder vars fns)
 )
 
-fn parse_let l builder vars fns in_block > u64 (
+fn parse_let l: u64 builder: u64 vars: u64 fns: u64 in_block: u64 > u64 (
     let var_name (alloca 2)
     (next_token l var_name)
     (assert (token_is_identifier var_name) "expected a variable name after `let`")
@@ -407,7 +407,7 @@ fn parse_let l builder vars fns in_block > u64 (
     res
 )
 
-fn parse_while l builder vars fns > u64 (
+fn parse_while l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let func (LLVMGetBasicBlockParent (LLVMGetInsertBlock builder))
 
     let check (LLVMAppendBasicBlock func "")
@@ -430,7 +430,7 @@ fn parse_while l builder vars fns > u64 (
     (LLVMConstInt i64 0 0)
 )
 
-fn parse_and l builder vars fns > u64 (
+fn parse_and l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let lhs (parse_expression l builder vars fns)
     let i64 (LLVMInt64Type)
     let bool_lhs (LLVMBuildICmp builder 33 lhs (LLVMConstInt i64 0 0) "")
@@ -453,7 +453,7 @@ fn parse_and l builder vars fns > u64 (
     phi
 )
 
-fn parse_or l builder vars fns > u64 (
+fn parse_or l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let lhs (parse_expression l builder vars fns)
     let i64 (LLVMInt64Type)
     let bool_lhs (LLVMBuildICmp builder 33 lhs (LLVMConstInt i64 0 0) "")
@@ -476,7 +476,7 @@ fn parse_or l builder vars fns > u64 (
     phi
 )
 
-fn parse_for l builder vars fns > u64 (
+fn parse_for l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let token (alloca 2)
     (next_token l token)
     (assert (token_is_identifier token) "expected a variable name after `for`")
@@ -514,7 +514,7 @@ fn parse_for l builder vars fns > u64 (
     (LLVMConstInt i64 0 0)
 )
 
-fn parse_defer l builder vars fns in_block > u64 (
+fn parse_defer l: u64 builder: u64 vars: u64 fns: u64 in_block: u64 > u64 (
     let this_block (LLVMGetInsertBlock builder)
     let func (LLVMGetBasicBlockParent this_block)
     let defer_block (LLVMAppendBasicBlock func "")
@@ -530,7 +530,7 @@ fn parse_defer l builder vars fns in_block > u64 (
     res
 )
 
-fn parse_string_literal builder token > u64 (
+fn parse_string_literal builder: u64 token: u64 > u64 (
     let source (read token)
     let len (read (add 8 token))
     let str (memdupz (add source 1) (sub len 2))
@@ -539,7 +539,7 @@ fn parse_string_literal builder token > u64 (
     (LLVMBuildPtrToInt builder ptr (LLVMInt64Type) "")
 )
 
-fn parse_character_literal token > u64 (
+fn parse_character_literal token: u64 > u64 (
     let byte (read8 (add 1 (read token)))
     let byte if (ne byte '\\)
         byte
@@ -554,7 +554,7 @@ fn parse_character_literal token > u64 (
     (LLVMConstInt (LLVMInt64Type) byte 0)
 )
 
-fn parse_field_access l builder vars fns > u64 (
+fn parse_field_access l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let token (alloca 2)
     (next_token l token)
     (assert (is_integer_literal token) "expected field index after `.`")
@@ -564,7 +564,7 @@ fn parse_field_access l builder vars fns > u64 (
     (LLVMBuildExtractValue builder aggregate index "")
 )
 
-fn parse_expression_or_rparen l builder vars fns in_block > u64 (
+fn parse_expression_or_rparen l: u64 builder: u64 vars: u64 fns: u64 in_block: u64 > u64 (
     let token (alloca 2)
     (next_token l token)
     if (token_is token '))
@@ -605,14 +605,14 @@ fn parse_expression_or_rparen l builder vars fns in_block > u64 (
     )
 )
 
-fn correct_arg_count arg_count function_type > u64 (
+fn correct_arg_count arg_count: u64 function_type: u64 > u64 (
     let param_count (LLVMCountParamTypes function_type)
     if (LLVMIsFunctionVarArg function_type)
         (ge arg_count param_count)
         (eq arg_count param_count)
 )
 
-fn call_function builder fns name args arg_count > u64 (
+fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 (
     if (streq name "add") do (
         (assert (eq arg_count 2) "expected 2 arguments to `add`")
         (LLVMBuildAdd builder (read args) (read (add 8 args)) "")
@@ -695,7 +695,7 @@ fn call_function builder fns name args arg_count > u64 (
     )
 )
 
-fn parse_function_call l builder vars fns > u64 (
+fn parse_function_call l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let function_name (alloca 2)
     (next_token l function_name)
     (assert (token_is_identifier function_name) "expected a function name after `(`")
@@ -716,13 +716,13 @@ fn parse_function_call l builder vars fns > u64 (
     (call_function builder fns name args (read arg_count))
 )
 
-fn parse_expression l builder vars fns > u64 (
+fn parse_expression l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let expr (parse_expression_or_rparen l builder vars fns 0)
     (assert expr "expected an expression, not `)`")
     expr
 )
 
-fn parse_function l module vars fns > u64 (
+fn parse_function l: u64 module: u64 vars: u64 fns: u64 > u64 (
     let function_name (alloca 2)
     (next_token l function_name)
     let extern (try_eat_keyword l function_name "extern")
@@ -748,8 +748,13 @@ fn parse_function l module vars fns > u64 (
             (assert (lt (read param_count) MAX_PARAMS)
                     "too many function parameters")
             let param_name (tokdupz token)
+
+            (next_token l token)
+            (assert (token_is token ':) "expected `:` after function parameter")
+            let param_type (parse_type l)
+
             (write (add param_names (mul 8 (read param_count))) param_name)
-            (write (add param_types (mul 8 (read param_count))) i64)
+            (write (add param_types (mul 8 (read param_count))) param_type)
             (inc param_count)
         )
     )
@@ -801,7 +806,7 @@ fn parse_function l module vars fns > u64 (
     )
 )
 
-fn parse_constant l vars > u64 (
+fn parse_constant l: u64 vars: u64 > u64 (
     let token (alloca 2)
 
     (next_token l token)
@@ -815,7 +820,7 @@ fn parse_constant l vars > u64 (
     (add_variable vars name (LLVMConstInt (LLVMInt64Type) value 0))
 )
 
-fn parse_top_level_item l module vars fns > u64 (
+fn parse_top_level_item l: u64 module: u64 vars: u64 fns: u64 > u64 (
     let token (alloca 2)
     (next_token l token)
     and (read token) do (
@@ -828,7 +833,7 @@ fn parse_top_level_item l module vars fns > u64 (
     )
 )
 
-fn parse l output_path > u64 (
+fn parse l: u64 output_path: u64 > u64 (
     let module (LLVMModuleCreateWithName 0)
     defer (LLVMDisposeModule module)
     (LLVMSetTarget module "x86_64-pc-linux-gnu")
@@ -849,7 +854,7 @@ fn parse l output_path > u64 (
     (LLVMWriteBitcodeToFile module output_path)
 )
 
-fn extern main argc argv > u64 (
+fn extern main argc: u64 argv: u64 > u64 (
     (assert (ge argc 2) "no source file provided")
     (assert (ge argc 3) "no output file path provided")
     (assert (eq argc 3) "too many command line arguments")

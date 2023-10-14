@@ -673,6 +673,7 @@ fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 
         let src (LLVMBuildIntToPtr builder (read (add 8 args)) ptr_type "")
         (LLVMBuildMemCpy builder dest 1 src 1 (read (add 16 args)))
     ) if (streq name "array") do (
+        (assert arg_count "expected at least 1 argument to `array`")
         let i64 (LLVMInt64Type)
         let array_ptr (LLVMBuildArrayAlloca
                         builder i64 (LLVMConstInt i64 arg_count 0) "")

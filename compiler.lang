@@ -54,6 +54,7 @@ fn extern LLVMPositionBuilderAtEnd builder: u64 block: u64 > u64.
 fn extern LLVMSetLinkage global: u64 linkage: u64 > u64.
 fn extern LLVMSetTarget module: u64 target: u64 > u64.
 fn extern LLVMStructType element_types: u64 element_count: u64 is_packed: u64 > u64.
+fn extern LLVMTypeOf value: u64 > u64.
 fn extern LLVMVerifyModule module: u64 action: u64 out_message: u64 > u64.
 fn extern LLVMWriteBitcodeToFile module: u64 path: u64 > u64.
 
@@ -675,13 +676,14 @@ fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 
     ) if (streq name "array") do (
         (assert arg_count "expected at least 1 argument to `array`")
         let i64 (LLVMInt64Type)
+        let type (LLVMTypeOf (read args))
         let array_ptr (LLVMBuildArrayAlloca
-                        builder i64 (LLVMConstInt i64 arg_count 0) "")
+                        builder type (LLVMConstInt i64 arg_count 0) "")
         for i arg_count
             let element (read (add (mul 8 i) args))
             let indices (array (LLVMConstInt i64 i 0))
             let element_ptr (LLVMBuildInBoundsGEP2
-                              builder i64 array_ptr indices 1 "")
+                              builder type array_ptr indices 1 "")
             (LLVMBuildStore builder element element_ptr)
         (LLVMBuildPtrToInt builder array_ptr i64 "")
     ) if (streq name "tuple")

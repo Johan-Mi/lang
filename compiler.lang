@@ -25,7 +25,6 @@ fn extern LLVMBuildExtractValue builder: u64 aggregate: u64 index: u64 name: u64
 fn extern LLVMBuildGlobalString builder: u64 str: u64 name: u64 > u64.
 fn extern LLVMBuildICmp builder: u64 comparison: u64 lhs: u64 rhs: u64 name: u64 > u64.
 fn extern LLVMBuildInBoundsGEP2 builder: u64 type: u64 ptr: u64 indices: u64 index_count: u64 name: u64 > u64.
-fn extern LLVMBuildIntCast2 builder: u64 value: u64 type: u64 is_signed: u64 name: u64 > u64.
 fn extern LLVMBuildIntToPtr builder: u64 value: u64 ptr_type: u64 name: u64 > u64.
 fn extern LLVMBuildLoad2 builder: u64 type: u64 ptr: u64 name: u64 > u64.
 fn extern LLVMBuildMemCpy builder: u64 dest: u64 dest_alignment: u64 src: u64 src_alignment: u64 size: u64 > u64.
@@ -35,6 +34,7 @@ fn extern LLVMBuildPtrToInt builder: u64 ptr: u64 type: u64 name: u64 > u64.
 fn extern LLVMBuildRet builder: u64 value: u64 > u64.
 fn extern LLVMBuildStore builder: u64 value: u64 ptr: u64 > u64.
 fn extern LLVMBuildSub builder: u64 lhs: u64 rhs: u64 name: u64 > u64.
+fn extern LLVMBuildZExt builder: u64 value: u64 type: u64 name: u64 > u64.
 fn extern LLVMConstInt type: u64 n: u64 is_signed: u64 > u64.
 fn extern LLVMConstStruct values: u64 count: u64 is_packed: u64 > u64.
 fn extern LLVMCountParamTypes function_type: u64 > u64.
@@ -635,7 +635,7 @@ fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 
         let i64 (LLVMInt64Type)
         let ptr_type (LLVMPointerType i64 0)
         let ptr (LLVMBuildIntToPtr builder (read args) ptr_type "")
-        (LLVMBuildIntCast2 builder (LLVMBuildLoad2 builder i8 ptr "") i64 0 "")
+        (LLVMBuildZExt builder (LLVMBuildLoad2 builder i8 ptr "") i64 "")
     ) if (streq name "write") do (
         (assert (eq arg_count 2) "expected 2 arguments to `write`")
         let i64 (LLVMInt64Type)
@@ -648,19 +648,19 @@ fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 
         let i8 (LLVMInt8Type)
         let ptr_type (LLVMPointerType i8 0)
         let ptr (LLVMBuildIntToPtr builder (read args) ptr_type "")
-        let value (LLVMBuildIntCast2 builder (read (add 8 args)) i8 0 "")
+        let value (LLVMBuildZExt builder (read (add 8 args)) i8 "")
         (LLVMBuildStore builder value ptr)
-        (LLVMBuildIntCast2 builder value (LLVMInt64Type) 0 "")
+        (LLVMBuildZExt builder value (LLVMInt64Type) "")
     ) if (streq name "eq") do (
         (assert (eq arg_count 2) "expected 2 arguments to `eq`")
-        (LLVMBuildIntCast2
+        (LLVMBuildZExt
           builder (LLVMBuildICmp builder 32 (read args) (read (add 8 args)) "")
-          (LLVMInt64Type) 0 "")
+          (LLVMInt64Type) "")
     ) if (streq name "lt") do (
         (assert (eq arg_count 2) "expected 2 arguments to `lt`")
-        (LLVMBuildIntCast2
+        (LLVMBuildZExt
           builder (LLVMBuildICmp builder 36 (read args) (read (add 8 args)) "")
-          (LLVMInt64Type) 0 "")
+          (LLVMInt64Type) "")
     ) if (streq name "alloca") do (
         (assert (eq arg_count 1) "expected 1 argument to `alloca`")
         let i64 (LLVMInt64Type)

@@ -25,6 +25,7 @@ fn extern LLVMBuildExtractValue builder: u64 aggregate: u64 index: u64 name: u64
 fn extern LLVMBuildGlobalString builder: u64 str: u64 name: u64 > u64.
 fn extern LLVMBuildICmp builder: u64 comparison: u64 lhs: u64 rhs: u64 name: u64 > u64.
 fn extern LLVMBuildInBoundsGEP2 builder: u64 type: u64 ptr: u64 indices: u64 index_count: u64 name: u64 > u64.
+fn extern LLVMBuildInsertValue builder: u64 aggregate: u64 value: u64 index: u64 name: u64 > u64.
 fn extern LLVMBuildIntToPtr builder: u64 value: u64 ptr_type: u64 name: u64 > u64.
 fn extern LLVMBuildLoad2 builder: u64 type: u64 ptr: u64 name: u64 > u64.
 fn extern LLVMBuildMemCpy builder: u64 dest: u64 dest_alignment: u64 src: u64 src_alignment: u64 size: u64 > u64.
@@ -45,6 +46,7 @@ fn extern LLVMGetBasicBlockParent block: u64 > u64.
 fn extern LLVMGetFirstBasicBlock function: u64 > u64.
 fn extern LLVMGetInsertBlock builder: u64 > u64.
 fn extern LLVMGetParam function: u64 index: u64 > u64.
+fn extern LLVMGetUndef type: u64 > u64.
 fn extern LLVMInt64Type > u64.
 fn extern LLVMInt8Type > u64.
 fn extern LLVMIsFunctionVarArg function_type: u64 > u64.
@@ -614,6 +616,25 @@ fn correct_arg_count arg_count: u64 function_type: u64 > u64 (
         (eq arg_count param_count)
 )
 
+fn tuple_type elements: u64 element_count: u64 > u64 (
+    let element_types (alloca MAX_PARAMS)
+    for i element_count
+        let i (mul 8 i)
+        let element (read (add elements i))
+        (write (add element_types i) (LLVMTypeOf element))
+    (LLVMStructType element_types element_count 0)
+)
+
+fn make_tuple builder: u64 elements: u64 element_count: u64 > u64 (
+    let type (tuple_type elements element_count)
+    let aggregate (array (LLVMGetUndef type))
+    for i element_count
+        let element (read (add elements (mul 8 i)))
+        (write aggregate
+               (LLVMBuildInsertValue builder (read aggregate) element i ""))
+    (read aggregate)
+)
+
 fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 (
     if (streq name "add") do (
         (assert (eq arg_count 2) "expected 2 arguments to `add`")
@@ -688,7 +709,7 @@ fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 
             (LLVMBuildStore builder element element_ptr)
         (LLVMBuildPtrToInt builder array_ptr i64 "")
     ) if (streq name "tuple")
-        (LLVMConstStruct args arg_count 0)
+        (make_tuple builder args arg_count)
     do (
         let i (look_up_function fns name)
         (assert (ne i 18446744073709551615) "unknown function")

@@ -1,6 +1,6 @@
 # Lang (TODO: choose a name)
 
-A self-hosted, untyped, unsafe, compiled programming language.
+A self-hosted, unsafe, compiled programming language.
 
 ## Dependencies
 

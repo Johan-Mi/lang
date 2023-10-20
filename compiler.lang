@@ -362,6 +362,7 @@ fn parse_if l: u64 builder: u64 vars: u64 fns: u64 > u64 (
 
     (LLVMPositionBuilderAtEnd builder then_block)
     let then (parse_expression l builder vars fns)
+    let type (LLVMTypeOf then)
     let then_end_block (LLVMGetInsertBlock builder)
     (LLVMBuildBr builder after_block)
 
@@ -371,7 +372,7 @@ fn parse_if l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     (LLVMBuildBr builder after_block)
 
     (LLVMPositionBuilderAtEnd builder after_block)
-    let phi (LLVMBuildPhi builder i64 "")
+    let phi (LLVMBuildPhi builder type "")
     let incoming_values (array then else)
     let incoming_blocks (array then_end_block else_end_block)
     (LLVMAddIncoming phi incoming_values incoming_blocks 2)

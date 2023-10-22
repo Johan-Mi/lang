@@ -88,17 +88,21 @@ fn dec n: u64 > u64 (
     (write n (sub (read n) 1))
 )
 
+fn die > u64 (
+    (exit 1)
+)
+
 fn assert condition: u64 message: u64 > u64 (
     or condition do (
         (puts message)
-        (exit 1)
+        (die)
     )
 )
 
 fn assert_errno condition: u64 message: u64 > u64 (
     or condition do (
         (perror message)
-        (exit 1)
+        (die)
     )
 )
 

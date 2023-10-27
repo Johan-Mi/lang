@@ -9,6 +9,8 @@ fn extern memchr ptr: u64 byte: u64 len: u64 > u64.
 fn extern memcmp a: u64 b: u64 len: u64 > u64.
 fn extern memset ptr: u64 byte: u64 len: u64 > u64.
 fn extern perror message: u64 > u64.
+fn extern variadic printf fmt: u64 > u64.
+fn extern putchar c: u64 > u64.
 fn extern puts s: u64 > u64.
 fn extern strcmp a: u64 b: u64 > u64.
 fn extern strlen s: u64 > u64.
@@ -277,13 +279,20 @@ fn remove_variable vars: u64 > u64 (
     (free (read (add vars (mul 8 (read count)))))
 )
 
+fn error_unknown_variable name: (u64 u64) > u64 (
+    (printf "unknown variable: %.*s" .1 name .0 name)
+    (putchar '\n)
+    (die)
+)
+
 fn look_up_variable vars: u64 name: (u64 u64) > u64 (
     let count (read (add vars (mul 16 MAX_VARIABLES)))
     let res (array 0)
     for i count
         and (token_eq_str name (read (add vars (mul 8 i))))
             (write res (read (add vars (mul 8 (add MAX_VARIABLES i)))))
-    (assert (read res) "unknown variable")
+    or (read res)
+        (error_unknown_variable name)
     (read res)
 )
 

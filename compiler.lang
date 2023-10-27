@@ -293,7 +293,6 @@ fn look_up_variable vars: u64 name: (u64 u64) > u64 (
             (write res (read (add vars (mul 8 (add MAX_VARIABLES i)))))
     or (read res)
         (error_unknown_variable name)
-    (read res)
 )
 
 fn add_function fns: u64 name: u64 type: u64 ref: u64 > u64 (

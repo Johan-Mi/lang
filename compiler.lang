@@ -641,6 +641,12 @@ fn make_tuple builder: u64 elements: u64 element_count: u64 > u64 (
     (read aggregate)
 )
 
+fn error_unknown_function name: u64 > u64 (
+    (printf "unknown function: %s" name)
+    (putchar '\n)
+    (die)
+)
+
 fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 (
     if (streq name "add") do (
         (assert (eq arg_count 2) "expected 2 arguments to `add`")
@@ -718,7 +724,8 @@ fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 
         (make_tuple builder args arg_count)
     do (
         let i (look_up_function fns name)
-        (assert (ne i 18446744073709551615) "unknown function")
+        and (eq i 18446744073709551615)
+            (error_unknown_function name)
         let type (read (add fns (mul 8 (add i MAX_FUNCTIONS))))
         let ref (read (add fns (mul 8 (add i (mul 2 MAX_FUNCTIONS)))))
         (assert (correct_arg_count arg_count type) "wrong number of arguments to function call")

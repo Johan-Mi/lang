@@ -887,14 +887,12 @@ fn extern main argc: u64 argv: u64 > u64 (
     let file_path (read (add 8 argv))
     let output_path (read (add 16 argv))
 
-    let size_of_lexer 5
-    let lexer (alloca size_of_lexer)
-    defer (free (read (add 32 lexer)))
-    (memset lexer 0 (mul 8 size_of_lexer))
     let file (fopen file_path "r")
     defer (assert_errno (not (fclose file)) "failed to read source code")
     (assert_errno file "failed to read source code")
-    (write (add 24 lexer) file)
+
+    let lexer (array 0 0 0 file 0)
+    defer (free (read (add 32 lexer)))
 
     (parse lexer output_path)
 

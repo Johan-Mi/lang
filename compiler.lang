@@ -1,3 +1,4 @@
+fn extern dup2 oldfd: u64 newfd: u64 > u64.
 fn extern exit status: u64 > u64.
 fn extern fclose stream: u64 > u64.
 fn extern feof stream: u64 > u64.
@@ -64,7 +65,7 @@ fn extern LLVMWriteBitcodeToFile module: u64 path: u64 > u64.
 
 const MAX_PARAMS 8
 const MAX_VARIABLES 32
-const MAX_FUNCTIONS 128
+const MAX_FUNCTIONS 192
 
 fn not b: u64 > u64 (
     (eq b 0)
@@ -886,7 +887,13 @@ fn parse l: u64 output_path: u64 > u64 (
     (LLVMWriteBitcodeToFile module output_path)
 )
 
+fn redirect_stdout_to_stderr > u64 (
+    (dup2 2 1)
+)
+
 fn extern main argc: u64 argv: u64 > u64 (
+    (redirect_stdout_to_stderr)
+
     (assert (ge argc 2) "no source file provided")
     (assert (ge argc 3) "no output file path provided")
     (assert (eq argc 3) "too many command line arguments")

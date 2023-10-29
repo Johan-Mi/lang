@@ -2,6 +2,22 @@
 
 A self-hosted, unsafe, compiled programming language.
 
+## Features
+
+- Functions
+  - Support for importing external functions
+- Variables
+- A simple type system
+  - 64-bit integers
+  - Tuples
+- C-style string literals
+- Character literals
+
+## Anti-features
+
+- No macros
+- No global variables
+
 ## Dependencies
 
 - make

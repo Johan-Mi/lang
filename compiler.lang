@@ -673,11 +673,12 @@ fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 
         (LLVMBuildZExt builder (LLVMBuildLoad2 builder i8 ptr "") i64 "")
     ) if (streq name "write") do (
         (assert (eq arg_count 2) "expected 2 arguments to `write`")
-        let i64 (LLVMInt64Type)
-        let ptr_type (LLVMPointerType i64 0)
+        let value (read (add 8 args))
+        let type (LLVMTypeOf value)
+        let ptr_type (LLVMPointerType type 0)
         let ptr (LLVMBuildIntToPtr builder (read args) ptr_type "")
-        (LLVMBuildStore builder (read (add 8 args)) ptr)
-        (read (add 8 args))
+        (LLVMBuildStore builder value ptr)
+        value
     ) if (streq name "write8") do (
         (assert (eq arg_count 2) "expected 2 arguments to `write8`")
         let i8 (LLVMInt8Type)

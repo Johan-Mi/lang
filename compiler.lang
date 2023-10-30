@@ -361,9 +361,9 @@ fn parse_expression l: u64 builder: u64 vars: u64 fns: u64 > u64.
 fn parse_expression_or_rparen l: u64 builder: u64 vars: u64 fns: u64 in_block: u64 > u64.
 
 fn parse_if l: u64 builder: u64 vars: u64 fns: u64 > u64 (
-    let i64 (LLVMInt64Type)
     let condition (parse_expression l builder vars fns)
-    let bool_condition (LLVMBuildICmp builder 33 condition (LLVMConstInt i64 0 0) "")
+    let condition_type (LLVMTypeOf condition)
+    let bool_condition (LLVMBuildICmp builder 33 condition (LLVMConstInt condition_type 0 0) "")
 
     let func (LLVMGetBasicBlockParent (LLVMGetInsertBlock builder))
 

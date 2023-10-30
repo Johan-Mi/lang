@@ -445,8 +445,8 @@ fn parse_while l: u64 builder: u64 vars: u64 fns: u64 > u64 (
 
 fn parse_and l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let lhs (parse_expression l builder vars fns)
-    let i64 (LLVMInt64Type)
-    let bool_lhs (LLVMBuildICmp builder 33 lhs (LLVMConstInt i64 0 0) "")
+    let type (LLVMTypeOf lhs)
+    let bool_lhs (LLVMBuildICmp builder 33 lhs (LLVMConstInt type 0 0) "")
     let this_block (LLVMGetInsertBlock builder)
     let func (LLVMGetBasicBlockParent this_block)
     let rhs_block (LLVMAppendBasicBlock func "")
@@ -459,8 +459,8 @@ fn parse_and l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let rhs_end_block (LLVMGetInsertBlock builder)
 
     (LLVMPositionBuilderAtEnd builder after)
-    let phi (LLVMBuildPhi builder i64 "")
-    let incoming_values (array (LLVMConstInt i64 0 0) rhs)
+    let phi (LLVMBuildPhi builder type "")
+    let incoming_values (array (LLVMConstInt type 0 0) rhs)
     let incoming_blocks (array this_block rhs_end_block)
     (LLVMAddIncoming phi incoming_values incoming_blocks 2)
     phi
@@ -468,8 +468,8 @@ fn parse_and l: u64 builder: u64 vars: u64 fns: u64 > u64 (
 
 fn parse_or l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let lhs (parse_expression l builder vars fns)
-    let i64 (LLVMInt64Type)
-    let bool_lhs (LLVMBuildICmp builder 33 lhs (LLVMConstInt i64 0 0) "")
+    let type (LLVMTypeOf lhs)
+    let bool_lhs (LLVMBuildICmp builder 33 lhs (LLVMConstInt type 0 0) "")
     let this_block (LLVMGetInsertBlock builder)
     let func (LLVMGetBasicBlockParent this_block)
     let rhs_block (LLVMAppendBasicBlock func "")
@@ -482,7 +482,7 @@ fn parse_or l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let rhs_end_block (LLVMGetInsertBlock builder)
 
     (LLVMPositionBuilderAtEnd builder after)
-    let phi (LLVMBuildPhi builder i64 "")
+    let phi (LLVMBuildPhi builder type "")
     let incoming_values (array lhs rhs)
     let incoming_blocks (array this_block rhs_end_block)
     (LLVMAddIncoming phi incoming_values incoming_blocks 2)

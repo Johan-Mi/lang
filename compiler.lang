@@ -50,6 +50,7 @@ fn extern LLVMGetFirstBasicBlock function: u64 > u64.
 fn extern LLVMGetInsertBlock builder: u64 > u64.
 fn extern LLVMGetParam function: u64 index: u64 > u64.
 fn extern LLVMGetUndef type: u64 > u64.
+fn extern LLVMInt1Type > u64.
 fn extern LLVMInt64Type > u64.
 fn extern LLVMInt8Type > u64.
 fn extern LLVMIsFunctionVarArg function_type: u64 > u64.
@@ -345,6 +346,8 @@ fn parse_type_or_rparen l: u64 > u64 (
         0
     if (token_eq_str token "u64")
         (LLVMInt64Type)
+    if (token_eq_str token "bool")
+        (LLVMInt1Type)
     if (token_is token '()
         (parse_tuple_type l)
     (assert 0 "expected a type or `)`")

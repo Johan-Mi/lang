@@ -9,6 +9,7 @@ A self-hosted, unsafe, compiled programming language.
 - Variables
 - A simple type system
   - 64-bit integers
+  - Booleans
   - Tuples
 - C-style string literals
 - Character literals

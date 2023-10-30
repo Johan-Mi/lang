@@ -611,6 +611,10 @@ fn parse_expression_or_rparen l: u64 builder: u64 vars: u64 fns: u64 in_block: u
         (parse_for l builder vars fns)
     if (token_eq_str token "defer")
         (parse_defer l builder vars fns in_block)
+    if (token_eq_str token "true")
+        (LLVMConstInt (LLVMInt1Type) 1 0)
+    if (token_eq_str token "false")
+        (LLVMConstInt (LLVMInt1Type) 0 0)
     do (
         (assert (token_is_identifier token) "expected an expression")
         (look_up_variable vars token)

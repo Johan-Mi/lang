@@ -430,9 +430,9 @@ fn parse_while l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     (LLVMBuildBr builder check)
     (LLVMPositionBuilderAtEnd builder check)
     let condition (parse_expression l builder vars fns)
-    let i64 (LLVMInt64Type)
+    let condition_type (LLVMTypeOf condition)
     let bool_condition (LLVMBuildICmp
-        builder 33 condition (LLVMConstInt i64 0 0) "")
+        builder 33 condition (LLVMConstInt condition_type 0 0) "")
     (LLVMBuildCondBr builder bool_condition loop after)
 
     (LLVMPositionBuilderAtEnd builder loop)
@@ -440,7 +440,7 @@ fn parse_while l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     (LLVMBuildBr builder check)
 
     (LLVMPositionBuilderAtEnd builder after)
-    (LLVMConstInt i64 0 0)
+    (LLVMConstInt (LLVMInt64Type) 0 0)
 )
 
 fn parse_and l: u64 builder: u64 vars: u64 fns: u64 > u64 (

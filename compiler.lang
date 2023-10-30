@@ -233,9 +233,7 @@ fn try_eat_keyword l: u64 token: u64 s: u64 > u64 (
     let source token
     let len (add 8 token)
     and (token_eq_str (tuple (read source) (read len)) s) do (
-        let next (next_token l)
-        (write source .0 next)
-        (write len .1 next)
+        (write token (next_token l))
         1
     )
 )

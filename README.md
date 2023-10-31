@@ -7,6 +7,12 @@ A self-hosted, unsafe, compiled programming language.
 - Functions
   - Support for importing external functions
 - Variables
+- Control flow
+  - if-else
+  - Short-circuiting and/or
+  - while loops
+  - for loops
+  - Scope-based defer
 - A simple type system
   - 64-bit integers
   - Booleans

@@ -653,13 +653,13 @@ fn make_tuple builder: u64 elements: u64 element_count: u64 > u64 (
     (read aggregate)
 )
 
-fn error_unknown_function name: u64 > u64 (
-    (printf "unknown function: %s" name)
+fn error_unknown_function name: u64 line_number: u64 > u64 (
+    (printf "%zu: unknown function: %s" line_number name)
     (putchar '\n)
     (die)
 )
 
-fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 (
+fn call_function builder: u64 fns: u64 name: u64 line_number: u64 args: u64 arg_count: u64 > u64 (
     if (streq name "add") do (
         (assert (eq arg_count 2) "expected 2 arguments to `add`")
         (LLVMBuildAdd builder (read args) (read (add 8 args)) "")
@@ -738,7 +738,7 @@ fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 
     do (
         let i (look_up_function fns name)
         and (eq i 18446744073709551615)
-            (error_unknown_function name)
+            (error_unknown_function name line_number)
         let type (read (add fns (mul 8 (add i MAX_FUNCTIONS))))
         let ref (read (add fns (mul 8 (add i (mul 2 MAX_FUNCTIONS)))))
         (assert (correct_arg_count arg_count type) "wrong number of arguments to function call")
@@ -748,6 +748,7 @@ fn call_function builder: u64 fns: u64 name: u64 args: u64 arg_count: u64 > u64 
 
 fn parse_function_call l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     let function_name (next_token l)
+    let line_number (current_line_number l)
     (assert (token_is_identifier function_name) "expected a function name after `(`")
     let name (tokdupz function_name)
     defer (free name)
@@ -763,7 +764,7 @@ fn parse_function_call l: u64 builder: u64 vars: u64 fns: u64 > u64 (
             (inc arg_count)
         ) (write done 1)
 
-    (call_function builder fns name args (read arg_count))
+    (call_function builder fns name line_number args (read arg_count))
 )
 
 fn parse_expression l: u64 builder: u64 vars: u64 fns: u64 > u64 (

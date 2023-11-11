@@ -143,6 +143,10 @@ fn is_single_character_token c: u64 > u64 (
     or (eq c '() or (eq c ')) or (eq c '.) or (eq c ':) (eq c '>)
 )
 
+fn current_line_number l: u64 > u64 (
+    (read (add 40 l))
+)
+
 fn bump l: u64 byte_count: u64 > u64 (
     (write l (add (read l) byte_count))
     (write (add 8 l) (sub (read (add 8 l)) byte_count))
@@ -155,6 +159,7 @@ fn remove_comment l: u64 > u64 (
 )
 
 fn read_next_line l: u64 > u64 (
+    (inc (add 40 l))
     (write (add 8 l) (getline (add 32 l) (add 16 l) (read (add 24 l))))
     (write l (read (add 32 l)))
     and (not (feof (read (add 24 l)))) do (
@@ -279,20 +284,20 @@ fn remove_variable vars: u64 > u64 (
     (free (read (add vars (mul 8 (read count)))))
 )
 
-fn error_unknown_variable name: (u64 u64) > u64 (
-    (printf "unknown variable: %.*s" .1 name .0 name)
+fn error_unknown_variable name: (u64 u64) line_number: u64 > u64 (
+    (printf "%zu: unknown variable: %.*s" line_number .1 name .0 name)
     (putchar '\n)
     (die)
 )
 
-fn look_up_variable vars: u64 name: (u64 u64) > u64 (
+fn look_up_variable vars: u64 name: (u64 u64) line_number: u64 > u64 (
     let count (read (add vars (mul 16 MAX_VARIABLES)))
     let res (array 0)
     for i count
         and (token_eq_str name (read (add vars (mul 8 i))))
             (write res (read (add vars (mul 8 (add MAX_VARIABLES i)))))
     or (read res)
-        (error_unknown_variable name)
+        (error_unknown_variable name line_number)
 )
 
 fn add_function fns: u64 name: u64 type: u64 ref: u64 > u64 (
@@ -580,6 +585,7 @@ fn parse_field_access l: u64 builder: u64 vars: u64 fns: u64 > u64 (
 
 fn parse_expression_or_rparen l: u64 builder: u64 vars: u64 fns: u64 in_block: u64 > u64 (
     let token (next_token l)
+    let line_number (current_line_number l)
     if (token_is token '))
         0
     if (token_is token '()
@@ -617,7 +623,7 @@ fn parse_expression_or_rparen l: u64 builder: u64 vars: u64 fns: u64 in_block: u
         (LLVMConstInt (LLVMInt1Type) 0 0)
     do (
         (assert (token_is_identifier token) "expected an expression")
-        (look_up_variable vars token)
+        (look_up_variable vars token line_number)
     )
 )
 
@@ -910,7 +916,7 @@ fn extern main argc: u64 argv: u64 > u64 (
     defer (assert_errno (not (fclose file)) "failed to read source code")
     (assert_errno file "failed to read source code")
 
-    let lexer (array 0 0 0 file 0)
+    let lexer (array 0 0 0 file 0 0)
     defer (free (read (add 32 lexer)))
 
     (parse lexer output_path)

@@ -236,9 +236,7 @@ fn token_eq_str token: (u64 u64) s: u64 > u64 (
 )
 
 fn try_eat_keyword l: u64 token: u64 s: u64 > u64 (
-    let source token
-    let len (add 8 token)
-    and (token_eq_str (tuple (read source) (read len)) s) do (
+    and (token_eq_str read_as (u64 u64) token s) do (
         (write token (next_token l))
         1
     )
@@ -583,6 +581,14 @@ fn parse_field_access l: u64 builder: u64 vars: u64 fns: u64 > u64 (
     (LLVMBuildExtractValue builder aggregate index "")
 )
 
+fn parse_read_as l: u64 builder: u64 vars: u64 fns: u64 > u64 (
+    let type (parse_type l)
+    let ptr (parse_expression l builder vars fns)
+    let ptr_type (LLVMPointerType type 0)
+    let ptr (LLVMBuildIntToPtr builder ptr ptr_type "")
+    (LLVMBuildLoad2 builder type ptr "")
+)
+
 fn parse_expression_or_rparen l: u64 builder: u64 vars: u64 fns: u64 in_block: u64 > u64 (
     let token (next_token l)
     let line_number (current_line_number l)
@@ -621,6 +627,8 @@ fn parse_expression_or_rparen l: u64 builder: u64 vars: u64 fns: u64 in_block: u
         (LLVMConstInt (LLVMInt1Type) 1 0)
     if (token_eq_str token "false")
         (LLVMConstInt (LLVMInt1Type) 0 0)
+    if (token_eq_str token "read_as")
+        (parse_read_as l builder vars fns)
     do (
         (assert (token_is_identifier token) "expected an expression")
         (look_up_variable vars token line_number)
